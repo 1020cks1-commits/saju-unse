@@ -161,7 +161,7 @@
       <div class="brand">
         <span class="brand-emblem">月</span>
         <div>
-          <h1 class="brand-title">청월당 <span class="serif-sub">淸月堂</span></h1>
+          <h1 class="brand-title">별빛운세정원 <span class="serif-sub">사주운세</span></h1>
           <p class="brand-desc">KASI 정밀 만세력 × Gemini Flex AI 명리 리포트</p>
         </div>
       </div>
@@ -327,14 +327,14 @@
           <div id="readingContent" class="reading-content"></div>
         </article>
         <article class="glass-card bento-lucky">
-          <div class="card-title-row"><h3>청월당 개운 처방 <span class="sub-hanja">開運</span></h3></div>
+          <div class="card-title-row"><h3>별빛지기 개운 처방 <span class="sub-hanja">開運</span></h3></div>
           <div id="luckyGrid" class="lucky-grid"></div>
         </article>
       </section>
     </main>
 
     <footer class="app-footer">
-      <p>청월당 AI 사주는 생성형 AI(Gemini)와 한국천문연구원(KASI) 기반 만세력을 결합한 자기성찰·엔터테인먼트 서비스입니다.</p>
+      <p>별빛운세정원 AI 사주는 생성형 AI(Gemini)와 한국천문연구원(KASI) 기반 만세력을 결합한 자기성찰·엔터테인먼트 서비스입니다.</p>
     </footer>
   </div>
 
@@ -451,7 +451,7 @@
     el("copyBtn").addEventListener("click", async () => {
       if (!state.lastResult) return;
       const { meta, chart, reading } = state.lastResult; const p = chart.pillars;
-      await navigator.clipboard.writeText(`[청월당 AI 사주] ${meta.name}님\n원국: ${p.year.korean} · ${p.month.korean} · ${p.day.korean} · ${p.hour ? p.hour.korean : "미상"}\n${reading.personaTitle}\n\n${reading.executiveSummary}`);
+      await navigator.clipboard.writeText(`[별빛운세정원 AI 사주] ${meta.name}님\n원국: ${p.year.korean} · ${p.month.korean} · ${p.day.korean} · ${p.hour ? p.hour.korean : "미상"}\n${reading.personaTitle}\n\n${reading.executiveSummary}`);
       el("copyBtn").textContent = "✅ 복사 완료!"; setTimeout(() => { el("copyBtn").textContent = "📋 요약 복사"; }, 2000);
     });
   </script>
