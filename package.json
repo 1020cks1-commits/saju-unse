@@ -1,0 +1,16 @@
+{
+  "name": "cheongwoldang-ai-saju",
+  "version": "1.0.0",
+  "description": "KASI 정밀 만세력 + Gemini Flex AI 사주 웹앱",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google/genai": "^3.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "manseryeok": "^2.0.0"
+  }
+}
