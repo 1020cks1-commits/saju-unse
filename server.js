@@ -230,7 +230,7 @@ app.post("/api/saju", async (req, res) => {
     const currentYear = new Date().getFullYear();
     const approxKoreanAge = currentYear - Number(year) + 1;
 
-    const systemInstruction = `당신은 한국 전통 명리학의 깊은 통찰과 현대 심리 상담의 감각을 겸비한 AI 사주 마스터 '청월당'입니다. 제공된 만세력 데이터만을 근거로 따뜻하고 현실적인 조언을 한국어로 작성하세요.`;
+    const systemInstruction = `당신은 한국 전통 명리학의 깊은 통찰과 현대 심리 상담의 감각을 겸비한 AI 사주 마스터 '별빛운세정원'입니다. 제공된 만세력 데이터만을 근거로 따뜻하고 현실적인 조언을 한국어로 작성하세요.`;
 
     const prompt = `
 [의뢰인] ${name} / ${gender === "male" ? "남성" : "여성"} / ${isLunar ? (isLeapMonth ? "음력(윤달)" : "음력") : "양력"} ${year}.${month}.${day} ${unknownTime ? "시간미상" : `${hour}:${minute}`} (약 ${approxKoreanAge}세)
@@ -280,5 +280,5 @@ app.post("/api/saju", async (req, res) => {
 });
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`✨ 청월당 AI 사주 서버가 실행되었습니다: http://0.0.0.0:${PORT}`);
+  console.log(`✨ 별빛운세정원 AI 사주 서버가 실행되었습니다: http://0.0.0.0:${PORT}`);
 });
