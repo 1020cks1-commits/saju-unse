@@ -14,21 +14,20 @@
       --glass-border: rgba(255, 255, 255, 0.14);
       --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.22);
       --text-primary: #f8fafc;
-      --text-secondary: rgba(226, 232, 240, 0.78);
+      --text-secondary: rgba(226, 232, 240, 0.8);
       --text-muted: rgba(148, 163, 184, 0.72);
       --el-wood: #34d399; --el-fire: #fb7185; --el-earth: #fbbf24; --el-metal: #e2e8f0; --el-water: #60a5fa;
-      --aurora-1: rgba(79, 70, 229, 0.44); --aurora-2: rgba(147, 51, 234, 0.34); --aurora-3: rgba(14, 165, 233, 0.30);
       --accent: #818cf8;
     }
-    body[data-element="목"] { --aurora-1: rgba(16,185,129,.42); --aurora-2: rgba(6,182,212,.34); --aurora-3: rgba(99,102,241,.28); --accent: #34d399; }
-    body[data-element="화"] { --aurora-1: rgba(244,63,94,.42); --aurora-2: rgba(168,85,247,.36); --aurora-3: rgba(251,146,60,.28); --accent: #fb7185; }
-    body[data-element="토"] { --aurora-1: rgba(245,158,11,.38); --aurora-2: rgba(217,119,6,.28); --aurora-3: rgba(124,58,237,.30); --accent: #fbbf24; }
-    body[data-element="금"] { --aurora-1: rgba(148,163,184,.38); --aurora-2: rgba(56,189,248,.32); --aurora-3: rgba(99,102,241,.30); --accent: #cbd5e1; }
+    body[data-element="목"] { --accent: #34d399; }
+    body[data-element="화"] { --accent: #fb7185; }
+    body[data-element="토"] { --accent: #fbbf24; }
+    body[data-element="금"] { --accent: #cbd5e1; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: "Pretendard", sans-serif;
       background:
-        linear-gradient(rgba(7, 8, 15, 0.48), rgba(7, 8, 15, 0.72)),
+        linear-gradient(rgba(7, 8, 15, 0.22), rgba(7, 8, 15, 0.44)),
         url("/images/bg.png") center / cover no-repeat fixed,
         var(--bg-obsidian);
       color: var(--text-primary);
@@ -37,12 +36,6 @@
       line-height: 1.6;
     }
     .serif-heading, .serif-sub { font-family: "Noto Serif KR", serif; }
-    .aurora-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; opacity: 0.45; }
-    .orb { position: absolute; border-radius: 50%; filter: blur(110px); transition: background 1.4s ease; animation: floatOrb 22s ease-in-out infinite alternate; }
-    .orb-1 { width: 55vw; height: 55vw; max-width: 720px; max-height: 720px; top: -15%; left: -10%; background: radial-gradient(circle, var(--aurora-1), transparent 70%); }
-    .orb-2 { width: 50vw; height: 50vw; max-width: 660px; max-height: 660px; top: 20%; right: -12%; background: radial-gradient(circle, var(--aurora-2), transparent 70%); animation-delay: -6s; }
-    .orb-3 { width: 48vw; height: 48vw; max-width: 620px; max-height: 620px; bottom: -18%; left: 18%; background: radial-gradient(circle, var(--aurora-3), transparent 70%); animation-delay: -12s; }
-    @keyframes floatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(40px, 30px) scale(1.08); } }
     .app-shell { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
     .glass-card { background: var(--glass-bg); backdrop-filter: blur(26px) saturate(165%); -webkit-backdrop-filter: blur(26px) saturate(165%); border: 1px solid var(--glass-border); border-radius: 28px; box-shadow: var(--glass-highlight), 0 24px 48px -12px rgba(0, 0, 0, 0.58); }
     .glass-pill { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 999px; box-shadow: var(--glass-highlight); }
@@ -56,10 +49,11 @@
     .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: #34d399; box-shadow: 0 0 10px #34d399; }
     .input-panel { max-width: 720px; margin: 0 auto; padding: 36px; }
     .panel-header { text-align: center; margin-bottom: 30px; }
-   .hero-portrait { width: 176px; height: 176px; margin: 0 auto 20px; padding: 4px; border-radius: 50%; background: linear-gradient(135deg, rgba(251,191,36,.65), rgba(168,85,247,.65)); box-shadow: 0 0 36px rgba(168,85,247,.42), 0 0 18px rgba(251,191,36,.22); }
-    .hero-portrait img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: 50% 5%; display: block; }
+
+    /* 캐릭터 사진 + 옆 방문자 카운터 */
     .portrait-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 0 auto 22px; flex-wrap: wrap; }
-    .portrait-row .hero-portrait { margin: 0; }
+    .hero-portrait { width: 176px; height: 176px; padding: 4px; border-radius: 50%; background: linear-gradient(135deg, rgba(251,191,36,.65), rgba(168,85,247,.65)); box-shadow: 0 0 36px rgba(168,85,247,.42), 0 0 18px rgba(251,191,36,.22); flex-shrink: 0; }
+    .hero-portrait img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: 50% 5%; display: block; }
     .visitor-badge {
       display: inline-flex; flex-direction: column; align-items: flex-start; gap: 3px;
       padding: 12px 18px; border-radius: 20px;
@@ -71,6 +65,7 @@
     .visitor-label { display: flex; align-items: center; gap: 6px; font-size: 0.74rem; color: var(--text-secondary); }
     .visitor-dot { width: 7px; height: 7px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 10px #fbbf24; }
     .visitor-count { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; color: #fde68a; font-variant-numeric: tabular-nums; }
+
     .eyebrow { display: inline-block; font-size: 0.72rem; letter-spacing: 0.22em; color: var(--accent); font-weight: 600; margin-bottom: 10px; }
     .panel-header h2 { font-size: 1.75rem; line-height: 1.38; margin-bottom: 10px; }
     .sub-copy { font-size: 0.9rem; color: var(--text-secondary); }
@@ -109,7 +104,28 @@
     .switch-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; }
     .switch-row strong { font-size: 0.85rem; display: block; }
     .switch-row p { font-size: 0.76rem; color: var(--text-muted); }
-    .cta-glass-btn { margin-top: 6px; padding: 17px 24px; border-radius: 18px; border: 1px solid rgba(255,255,255,.32); background: linear-gradient(135deg, rgba(129,140,248,.48), rgba(168,85,247,.48)); color: #fff; font-size: 1.02rem; font-weight: 700; cursor: pointer; }
+
+    /* 실행 버튼 2단 바 (무료 간단 + 1만자 정밀) */
+    .action-stack { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; }
+    .cta-lite-btn {
+      padding: 15px 24px; border-radius: 18px;
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.22), rgba(245, 158, 11, 0.14));
+      color: #fef3c7; font-size: 0.98rem; font-weight: 700; cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.22);
+      transition: transform 0.2s, background 0.2s;
+    }
+    .cta-lite-btn:hover { transform: translateY(-1px); background: linear-gradient(135deg, rgba(251, 191, 36, 0.32), rgba(245, 158, 11, 0.2)); }
+    .cta-glass-btn {
+      padding: 17px 24px; border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.32);
+      background: linear-gradient(135deg, rgba(129,140,248,.48), rgba(168,85,247,.48));
+      color: #fff; font-size: 1.02rem; font-weight: 700; cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 12px 28px rgba(79,70,229,.32);
+      transition: transform 0.2s;
+    }
+    .cta-glass-btn:hover { transform: translateY(-2px); }
+
     .loading-panel { max-width: 540px; margin: 40px auto; padding: 56px 32px; text-align: center; }
     .celestial-loader { position: relative; width: 110px; height: 110px; margin: 0 auto 28px; display: grid; place-items: center; }
     .ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; }
@@ -117,6 +133,27 @@
     .ring-inner { inset: 14px; border-bottom-color: #34d399; animation: spin 1.5s linear infinite reverse; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .hidden { display: none !important; }
+
+    /* 무료 간단 풀이 전용 창 */
+    .lite-wrapper { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    .lite-score-box { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .score-circle {
+      width: 84px; height: 84px; border-radius: 50%; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(251,191,36,0.28), rgba(168,85,247,0.28));
+      border: 2px solid rgba(251,191,36,0.55);
+    }
+    .score-num { font-size: 1.65rem; font-weight: 800; color: #fde68a; line-height: 1; }
+    .score-sub { font-size: 0.72rem; color: var(--text-secondary); }
+    .lite-card { padding: 26px; }
+    .lite-text { font-size: 0.98rem; line-height: 1.82; color: rgba(241,245,249,.92); white-space: pre-line; margin-top: 12px; }
+    .lite-upsell {
+      padding: 26px; text-align: center;
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      background: linear-gradient(135deg, rgba(79,70,229,0.24), rgba(168,85,247,0.18));
+    }
+
+    /* 1만자 정밀 벤토 그리드 */
     .result-bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
     .result-toolbar { grid-column: span 12; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -179,17 +216,12 @@
   </style>
 </head>
 <body data-element="수">
-  <div class="aurora-bg" aria-hidden="true">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-  </div>
   <div class="app-shell">
     <header class="top-nav glass-pill">
       <div class="brand">
         <span class="brand-emblem">✨</span>
         <div>
-          <h1 class="brand-title">별빛운세정원 <span class="serif-sub">사주.운세</span></h1>
+          <h1 class="brand-title">별빛운세정원 <span class="serif-sub">사주.운명</span></h1>
           <p class="brand-desc">KASI 정밀 만세력 </p>
         </div>
       </div>
@@ -197,27 +229,28 @@
     </header>
 
     <main>
+      <!-- 입력 섹션 -->
       <section id="inputSection" class="glass-card input-panel">
         <div class="panel-header">
-         <div class="portrait-row">
-         <div class="hero-portrait">
-           <img src="/images/character.png" alt="별빛운세정원" onerror="this.parentElement.style.display='none'" />
-         </div>
-         <div class="visitor-badge">
-           <span class="visitor-label"><span class="visitor-dot"></span> 실시간 누적 방문</span>
-           <span class="visitor-count"><span id="visitCountText">78,000</span>명</span>
-         </div>
-       </div>
-          <span class="eyebrow">별빛운세정원 사주 운명 이야기</span>
-          <h2 class="serif-heading">별빛 지기가<br />당신의 사주 운명의 <br />비밀을 알려 드립니다.</h2>
-          <p class="sub-copy">별빛운세 정원에서는 원국·지장간·12운성·합충형파해까지 정밀 계산하여 1만자 이상 깊이 있게 풀이합니다.</p>
+          <div class="portrait-row">
+            <div class="hero-portrait">
+              <img src="/images/character.png" alt="☆별빛운세정원☆" onerror="this.parentElement.style.display='none'" />
+            </div>
+            <div class="visitor-badge">
+              <span class="visitor-label"><span class="visitor-dot"></span> 실시간 누적 방문</span>
+              <span class="visitor-count"><span id="visitCountText">78,000</span>명</span>
+            </div>
+          </div>
+          <span class="eyebrow">DESTINY BLUEPRINT</span>
+          <h2 class="serif-heading">당신의 사주와 운명의,<br />비밀을 알려 드립니다</h2>
+          <p class="sub-copy">가벼운 오늘의 운세부터 1만자 정밀 명리 리포트까지 원하는 깊이로 확인하세요.</p>
         </div>
 
         <form id="sajuForm" class="saju-form">
           <div class="form-row two-col">
             <div class="field">
               <label for="nameInput">이름 또는 별칭</label>
-              <input type="text" id="nameInput" placeholder="예: 별빛" maxlength="20" />
+              <input type="text" id="nameInput" placeholder="예: 서연" maxlength="20" />
             </div>
             <div class="field">
               <label>성별 <span class="hint-inline">(대운 순행/역행 기준)</span></label>
@@ -272,11 +305,11 @@
           </div>
 
           <div class="form-row">
-            <label>가장 궁금한 영역</label>
+            <label>가장 궁금한 영역 <span class="hint-inline">(1만자 정밀 풀이 전용)</span></label>
             <div class="topic-chips">
               <button type="button" class="topic-chip active" data-topic="종합운">✨ 종합운</button>
               <button type="button" class="topic-chip" data-topic="재물·투자운">💎 재물·투자</button>
-              <button type="button" class="topic-chip" data-topic="연애·인연운">🌙 연애·인연</button>
+              <button type="button" class="topic-chip" data-topic="연애·인연운">🌙 연애·궁합</button>
               <button type="button" class="topic-chip" data-topic="직업·커리어·이직">🧭 커리어·이직</button>
               <button type="button" class="topic-chip" data-topic="2027 신년운세">🔥 2027 신년운세</button>
             </div>
@@ -313,17 +346,69 @@
             </div>
           </details>
 
-          <button type="submit" class="cta-glass-btn">1만자 정밀 사주 명식 & AI 운세→</button>
+          <!-- 2단 실행 바: 위(무료 간단) / 아래(1만자 정밀) -->
+          <div class="action-stack">
+            <button type="button" id="liteBtn" class="cta-lite-btn">✨ 무료 간단 사주 & 오늘의 운세 보기 (3초) →</button>
+            <button type="submit" class="cta-glass-btn">🔮 1만자 정밀 사주 명식 운세 열기 →</button>
+          </div>
         </form>
       </section>
 
+      <!-- 로딩 섹션 -->
       <section id="loadingSection" class="glass-card loading-panel hidden">
         <div class="celestial-loader"><div class="ring ring-outer"></div><div class="ring ring-inner"></div><div class="serif-heading">陰陽</div></div>
-        <h3 class="serif-heading">1만자 이상의 정밀 명리 리포트를 작성 중입니다</h3>
-        <p id="loadingStepText" style="margin-top:12px;color:var(--text-secondary);">KASI 정본 만세력으로 원국과 지장간을 계산 중...</p>
-        <p id="loadingTimerText" style="margin-top:8px;font-size:.82rem;color:var(--text-muted);">경과 시간: 0초 (정밀 집필로 약 25~45초 소요됩니다)</p>
+        <h3 id="loadingTitle" class="serif-heading">천간의 기운을 모으고 있습니다</h3>
+        <p id="loadingStepText" style="margin-top:12px;color:var(--text-secondary);">KASI 정본 만세력으로 원국을 계산 중...</p>
+        <p id="loadingTimerText" style="margin-top:8px;font-size:.82rem;color:var(--text-muted);">경과 시간: 0초</p>
       </section>
 
+      <!-- 별도 창 1: 무료 간단 사주 & 오늘의 운세 창 -->
+      <section id="liteResultSection" class="lite-wrapper hidden">
+        <div class="result-toolbar">
+          <button type="button" id="liteResetBtn" class="ghost-glass-btn">← 다시 입력하기</button>
+          <span class="tier-badge">✨ 무료 간단 사주 & 오늘의 운세</span>
+        </div>
+
+        <article class="glass-card lite-card">
+          <div class="lite-score-box">
+            <div>
+              <span id="liteMetaPill" class="meta-pill"></span>
+              <h2 id="litePersonaTitle" class="serif-heading" style="font-size:1.45rem;"></h2>
+              <p id="liteTodayKeyword" style="color:#fde68a;font-size:.9rem;margin-top:6px;"></p>
+            </div>
+            <div class="score-circle">
+              <span id="liteScoreNum" class="score-num">88</span>
+              <span class="score-sub">오늘의 점수</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="glass-card lite-card">
+          <div class="card-title-row"><h3>☀️ 오늘의 운세</h3><span id="liteTodayDate" class="mini-info-badge"></span></div>
+          <p id="liteTodayFortune" class="lite-text"></p>
+        </article>
+
+        <article class="glass-card lite-card">
+          <div class="card-title-row"><h3>📜 내 사주 원국 & 간단 풀이 <span class="sub-hanja">四柱</span></h3></div>
+          <div id="litePillarsGrid" class="pillars-grid" style="margin-bottom:18px;"></div>
+          <p id="liteBriefSummary" class="lite-text"></p>
+        </article>
+
+        <article class="glass-card lite-card">
+          <div class="card-title-row"><h3>🍀 오늘의 행운 포인트</h3></div>
+          <div id="liteLuckyBox" class="lucky-grid"></div>
+        </article>
+
+        <article class="glass-card lite-upsell">
+          <h3 class="serif-heading" style="font-size:1.25rem;margin-bottom:8px;">더 깊은 인생 설계와 2027년 신년운세가 궁금하신가요?</h3>
+          <p style="font-size:.9rem;color:var(--text-secondary);margin-bottom:18px;">
+            지장간·12운성·합충형파해까지 모두 계산한 <strong>1만자 이상 프리미엄 정밀 리포트</strong>로 확인해 보세요.
+          </p>
+          <button type="button" id="upgradeToFullBtn" class="cta-glass-btn" style="width:100%;">🔮 방금 정보로 1만자 정밀 사주 풀이 바로 보기 →</button>
+        </article>
+      </section>
+
+      <!-- 별도 창 2: 1만자 정밀 사주 벤토 창 -->
       <section id="resultSection" class="result-bento hidden">
         <div class="result-toolbar">
           <button type="button" id="resetBtn" class="ghost-glass-btn">← 다시 입력하기</button>
@@ -381,12 +466,12 @@
   <script>
     const state = { gender: "female", calendarType: "solar", focusTopic: "종합운", lastResult: null, activeTab: "questionAnswer" };
     const el = (id) => document.getElementById(id);
+
     fetch("/api/visit", { method: "POST" })
-   .then((r) => r.json())
-   .then((d) => {
-     if (d.count) el("visitCountText").textContent = Number(d.count).toLocaleString("ko-KR");
-   })
-   .catch(() => {});
+      .then((r) => r.json())
+      .then((d) => { if (d.count) el("visitCountText").textContent = Number(d.count).toLocaleString("ko-KR"); })
+      .catch(() => {});
+
     const escapeHtml = (str) => String(str ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 
     document.querySelectorAll(".seg-btn").forEach((b) => b.addEventListener("click", () => {
@@ -407,47 +492,101 @@
     }));
     el("unknownTimeCheck").addEventListener("change", (e) => el("timeInputGroup").classList.toggle("disabled", e.target.checked));
 
-    let loadingTimer = null;
-    let secTimer = null;
-    function startLoading() {
-      const steps = [
-        "KASI 정본 만세력으로 4기둥·지장간·12운성을 계산 중...",
-        "원국의 합충형파해와 용신·희신을 도출하는 중...",
-        "재물·투자·커리어·연애·인연 정밀 분석을 집필 중...",
-        "2027년 정미년 분기별 신년운세와 대운 흐름을 작성 중...",
-        "1만자 이상 최종 리포트를 다듬는 중..."
-      ];
-      let i = 0; let sec = 0;
+    let loadingTimer = null, secTimer = null;
+    function startLoading(mode) {
+      const isLite = mode === "lite";
+      el("loadingTitle").textContent = isLite ? "오늘의 별빛 운세를 읽고 있습니다" : "1만자 이상의 정밀 명리 리포트를 작성 중입니다";
+      const steps = isLite
+        ? ["KASI 만세력으로 사주 원국을 세우는 중...", "오늘의 운세와 핵심 기질을 정리 중..."]
+        : ["KASI 정본 만세력으로 4기둥·지장간·12운성을 계산 중...", "원국의 합충형파해와 용신·희신을 도출하는 중...", "재물·투자·커리어·연애 정밀 분석을 집필 중...", "2027년 정미년 신년운세와 대운 흐름을 작성 중...", "1만자 이상 최종 리포트를 다듬는 중..."];
+      let i = 0, sec = 0;
       el("loadingStepText").textContent = steps[0];
-      el("loadingTimerText").textContent = "경과 시간: 0초 (정밀 집필로 약 25~45초 소요됩니다)";
-      loadingTimer = setInterval(() => { i = Math.min(i + 1, steps.length - 1); el("loadingStepText").textContent = steps[i]; }, 6000);
-      secTimer = setInterval(() => { sec += 1; el("loadingTimerText").textContent = `경과 시간: ${sec}초 (정밀 집필로 약 25~45초 소요됩니다)`; }, 1000);
+      el("loadingTimerText").textContent = isLite ? "경과 시간: 0초 (약 3~6초 소요)" : "경과 시간: 0초 (약 25~45초 소요)";
+      loadingTimer = setInterval(() => { i = Math.min(i + 1, steps.length - 1); el("loadingStepText").textContent = steps[i]; }, isLite ? 2500 : 6000);
+      secTimer = setInterval(() => { sec += 1; el("loadingTimerText").textContent = `경과 시간: ${sec}초 (${isLite ? "약 3~6초 소요" : "약 25~45초 소요"})`; }, 1000);
     }
 
-    el("sajuForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const payload = {
-        name: el("nameInput").value.trim() || "귀하", gender: state.gender,
-        year: Number(el("yearInput").value), month: Number(el("monthInput").value), day: Number(el("dayInput").value),
-        hour: Number(el("hourInput").value), minute: Number(el("minuteInput").value),
-        unknownTime: el("unknownTimeCheck").checked, isLunar: state.calendarType !== "solar", isLeapMonth: state.calendarType === "leap",
-        useTrueSolarTime: el("trueSolarCheck").checked, dayBoundary: el("dayBoundarySelect").value,
-        focusTopic: state.focusTopic, customQuestion: el("questionInput").value.trim(),
+    function buildPayload(mode) {
+      return {
+        mode,
+        name: el("nameInput").value.trim() || "귀하",
+        gender: state.gender,
+        year: Number(el("yearInput").value),
+        month: Number(el("monthInput").value),
+        day: Number(el("dayInput").value),
+        hour: Number(el("hourInput").value),
+        minute: Number(el("minuteInput").value),
+        unknownTime: el("unknownTimeCheck").checked,
+        isLunar: state.calendarType !== "solar",
+        isLeapMonth: state.calendarType === "leap",
+        useTrueSolarTime: el("trueSolarCheck").checked,
+        dayBoundary: el("dayBoundarySelect").value,
+        focusTopic: state.focusTopic,
+        customQuestion: el("questionInput").value.trim(),
         useFlex: el("flexTierCheck").checked
       };
-      el("inputSection").classList.add("hidden"); el("resultSection").classList.add("hidden"); el("loadingSection").classList.remove("hidden");
-      startLoading();
+    }
+
+    async function requestSaju(mode) {
+      el("inputSection").classList.add("hidden");
+      el("liteResultSection").classList.add("hidden");
+      el("resultSection").classList.add("hidden");
+      el("loadingSection").classList.remove("hidden");
+      startLoading(mode);
       try {
-        const res = await fetch("/api/saju", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const res = await fetch("/api/saju", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(buildPayload(mode)) });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "요청 실패");
-        state.lastResult = data; renderResult(data);
-        el("loadingSection").classList.add("hidden"); el("resultSection").classList.remove("hidden");
+        state.lastResult = data;
+        el("loadingSection").classList.add("hidden");
+        if (data.mode === "lite") {
+          renderLiteResult(data);
+          el("liteResultSection").classList.remove("hidden");
+        } else {
+          renderFullResult(data);
+          el("resultSection").classList.remove("hidden");
+        }
         window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (err) {
-        alert(err.message); el("loadingSection").classList.add("hidden"); el("inputSection").classList.remove("hidden");
+        alert(err.message);
+        el("loadingSection").classList.add("hidden");
+        el("inputSection").classList.remove("hidden");
       } finally { clearInterval(loadingTimer); clearInterval(secTimer); }
-    });
+    }
+
+    el("liteBtn").addEventListener("click", () => requestSaju("lite"));
+    el("sajuForm").addEventListener("submit", (e) => { e.preventDefault(); requestSaju("full"); });
+    el("upgradeToFullBtn").addEventListener("click", () => requestSaju("full"));
+
+    function buildPillarsHtml(chart) {
+      const cols = [
+        { label: "시주(말년)", p: chart.pillars.hour, tg: chart.tenGods.hour },
+        { label: "일주(본원)", p: chart.pillars.day, tg: chart.tenGods.day, isDay: true },
+        { label: "월주(청년)", p: chart.pillars.month, tg: chart.tenGods.month },
+        { label: "연주(초년)", p: chart.pillars.year, tg: chart.tenGods.year }
+      ];
+      return cols.map(({ label, p, tg, isDay }) => !p ? `<div class="pillar-col"><div class="pillar-label">${label}</div><div class="tengod-tag">미상</div><div class="char-box"><div class="char-hanja">?</div><div class="char-kor">미상</div></div><div class="char-box"><div class="char-hanja">?</div><div class="char-kor">미상</div></div><div class="tengod-tag">-</div></div>` :
+        `<div class="pillar-col ${isDay ? "is-day" : ""}"><div class="pillar-label">${label}</div><div class="tengod-tag">${escapeHtml(isDay ? "일간(나)" : tg?.stem || "-")}</div><div class="char-box"><div class="char-hanja el-${escapeHtml(p.stem.element)}">${escapeHtml(p.stem.hanja)}</div><div class="char-kor">${escapeHtml(p.stem.korean)}(${escapeHtml(p.stem.element)})</div></div><div class="char-box"><div class="char-hanja el-${escapeHtml(p.branch.element)}">${escapeHtml(p.branch.hanja)}</div><div class="char-kor">${escapeHtml(p.branch.korean)}(${escapeHtml(p.branch.element)})</div></div><div class="tengod-tag">${escapeHtml(tg?.branch || "-")}</div></div>`
+      ).join("");
+    }
+
+    function renderLiteResult(data) {
+      const { meta, chart, reading } = data;
+      document.body.setAttribute("data-element", chart.pillars.day.stem.element);
+      el("liteMetaPill").textContent = `${meta.name}님 · ${meta.gender === "male" ? "남성" : "여성"} · ${meta.solarOrLunar} ${meta.birthText}`;
+      el("litePersonaTitle").textContent = reading.personaTitle;
+      el("liteTodayKeyword").textContent = `✨ 오늘의 키워드: ${reading.todayKeyword}`;
+      el("liteScoreNum").textContent = reading.todayScore;
+      el("liteTodayDate").textContent = meta.todayText;
+      el("liteTodayFortune").textContent = reading.todayFortune;
+      el("litePillarsGrid").innerHTML = buildPillarsHtml(chart);
+      el("liteBriefSummary").textContent = reading.briefSajuSummary;
+      el("liteLuckyBox").innerHTML = `
+        <div class="lucky-row"><span class="lucky-label">오늘의 행운 컬러</span><span class="lucky-val">${escapeHtml(reading.luckyColor)}</span></div>
+        <div class="lucky-row"><span class="lucky-label">오늘의 행운 숫자</span><span class="lucky-val">${escapeHtml(reading.luckyNumber)}</span></div>
+        <div class="lucky-ritual"><strong style="display:block;color:#fff;margin-bottom:4px;">💡 오늘의 한 줄 조언</strong>${escapeHtml(reading.oneLineAdvice)}</div>
+      `;
+    }
 
     function showActiveTabContent() {
       if (!state.lastResult) return;
@@ -456,7 +595,7 @@
       el("tabLengthNote").textContent = `현재 항목 분량: ${text.length.toLocaleString()}자`;
     }
 
-    function renderResult(data) {
+    function renderFullResult(data) {
       const { meta, chart, reading } = data;
       const dayStem = chart.pillars.day.stem;
       document.body.setAttribute("data-element", dayStem.element);
@@ -468,16 +607,7 @@
       el("dayMasterOrb").innerHTML = `<span class="hanja el-${escapeHtml(dayStem.element)}">${escapeHtml(dayStem.hanja)}</span><span class="label">${escapeHtml(dayStem.korean)}${escapeHtml(dayStem.element)} 일간</span>`;
       el("keywordList").innerHTML = (reading.keywords || []).map((k) => `<span class="kw-chip">#${escapeHtml(k)}</span>`).join("");
       el("voidBranchBadge").textContent = `공망: ${chart.voidBranches.join(", ") || "없음"}`;
-
-      const cols = [
-        { label: "시주(말년)", p: chart.pillars.hour, tg: chart.tenGods.hour },
-        { label: "일주(본원)", p: chart.pillars.day, tg: chart.tenGods.day, isDay: true },
-        { label: "월주(청년)", p: chart.pillars.month, tg: chart.tenGods.month },
-        { label: "연주(초년)", p: chart.pillars.year, tg: chart.tenGods.year }
-      ];
-      el("pillarsGrid").innerHTML = cols.map(({ label, p, tg, isDay }) => !p ? `<div class="pillar-col"><div class="pillar-label">${label}</div><div class="tengod-tag">미상</div><div class="char-box"><div class="char-hanja">?</div><div class="char-kor">미상</div></div><div class="char-box"><div class="char-hanja">?</div><div class="char-kor">미상</div></div><div class="tengod-tag">-</div></div>` :
-        `<div class="pillar-col ${isDay ? "is-day" : ""}"><div class="pillar-label">${label}</div><div class="tengod-tag">${escapeHtml(isDay ? "일간(나)" : tg?.stem || "-")}</div><div class="char-box"><div class="char-hanja el-${escapeHtml(p.stem.element)}">${escapeHtml(p.stem.hanja)}</div><div class="char-kor">${escapeHtml(p.stem.korean)}(${escapeHtml(p.stem.element)})</div></div><div class="char-box"><div class="char-hanja el-${escapeHtml(p.branch.element)}">${escapeHtml(p.branch.hanja)}</div><div class="char-kor">${escapeHtml(p.branch.korean)}(${escapeHtml(p.branch.element)})</div></div><div class="tengod-tag">${escapeHtml(tg?.branch || "-")}</div></div>`
-      ).join("");
+      el("pillarsGrid").innerHTML = buildPillarsHtml(chart);
 
       const lacking = chart.elements.lacking.length > 0 ? `부족: ${chart.elements.lacking.join(", ")}` : `약함: ${chart.elements.weakest}`;
       el("elementSummaryTag").textContent = `주도: ${chart.elements.dominant} · ${lacking}`;
@@ -513,7 +643,14 @@
       showActiveTabContent();
     }));
 
-    el("resetBtn").addEventListener("click", () => { el("resultSection").classList.add("hidden"); el("inputSection").classList.remove("hidden"); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    function goHome() {
+      el("liteResultSection").classList.add("hidden");
+      el("resultSection").classList.add("hidden");
+      el("inputSection").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    el("liteResetBtn").addEventListener("click", goHome);
+    el("resetBtn").addEventListener("click", goHome);
 
     el("copyBtn").addEventListener("click", async () => {
       if (!state.lastResult) return;
