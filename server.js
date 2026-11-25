@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 const PORT = process.env.PORT || 3000;
 const DEFAULT_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
