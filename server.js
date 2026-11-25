@@ -441,12 +441,12 @@ app.post("/api/saju", async (req, res) => {
     const isLite = mode === "lite";
 
     // 추후 유료화 전환(REQUIRE_CREDITS=true) 시 1만자 정밀 풀이는 로그인 & 이용권 확인
-    if (!isLite && REQUIRE_CREDITS) {
-      if (!authUser) {
-        return res.status(401).json({ error: "1만자 정밀 풀이는 카카오 로그인 후 이용하실 수 있습니다." });
-      }
-      if (authUser.credits <= 0) {
-        return res.status(402).json({ error: "보유한 정밀 풀이 이용권이 부족합니다." });
+    if (!isLite && !authUser) {
+      return res.status(401).json({ error: "1만자 정밀 풀이는 카카오 로그인 후 이용하실 수 있습니다." });
+    }
+    if (!isLite && REQUIRE_CREDITS && authUser.credits <= 0) {
+      return res.status(402).json({ error: "보유한 정밀 풀이 이용권이 부족합니다." });
+    }
       }
     }
 
