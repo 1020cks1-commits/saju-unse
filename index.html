@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>별빛운세정원 · 淸月堂 | Gemini AI 사주 명리관</title>
+  <title>별빛운세정원 | Gemini AI 사주 명리관</title>
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -38,7 +38,7 @@
     .glass-pill { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 999px; box-shadow: var(--glass-highlight); }
     .top-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 22px; margin-bottom: 28px; }
     .brand { display: flex; align-items: center; gap: 14px; }
-    .brand-emblem { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-family: "Noto Serif KR", serif; font-weight: 700; font-size: 1.05rem; background: linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.04)); border: 1px solid rgba(255,255,255,.26); }
+    .brand-emblem { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 1.15rem; background: linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.04)); border: 1px solid rgba(255,255,255,.26); }
     .brand-title { font-size: 1.05rem; font-weight: 700; }
     .brand-title .serif-sub { font-weight: 400; font-size: 0.85rem; color: var(--text-secondary); margin-left: 4px; }
     .brand-desc { font-size: 0.76rem; color: var(--text-muted); }
@@ -56,6 +56,7 @@
     label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
     .hint-inline { font-weight: 400; font-size: 0.76rem; color: var(--text-muted); }
     input[type="text"], input[type="number"], select { width: 100%; padding: 13px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,.14); background: rgba(15,23,42,.45); color: var(--text-primary); font-family: inherit; font-size: 0.95rem; outline: none; }
+    select:disabled { opacity: 0.85; cursor: not-allowed; }
     .segmented-control { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 16px; background: rgba(15,23,42,.5); border: 1px solid rgba(255,255,255,.12); }
     .seg-btn { border: none; background: transparent; color: var(--text-secondary); padding: 10px; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
     .seg-btn.active { background: rgba(255,255,255,.16); color: #fff; }
@@ -159,10 +160,10 @@
   <div class="app-shell">
     <header class="top-nav glass-pill">
       <div class="brand">
-        <span class="brand-emblem">月</span>
+        <span class="brand-emblem">✨</span>
         <div>
-          <h1 class="brand-title">별빛운세정원 <span class="serif-sub">사주운세</span></h1>
-          <p class="brand-desc">KASI 정밀 만세력 × Gemini Flex AI 명리 리포트</p>
+          <h1 class="brand-title">별빛운세정원 <span class="serif-sub">星光庭園</span></h1>
+          <p class="brand-desc">KASI 정밀 만세력 × Gemini AI 명리 리포트</p>
         </div>
       </div>
       <span class="status-badge"><span class="pulse-dot"></span> KASI 24절기 보정</span>
@@ -266,12 +267,14 @@
                     <option value="splitJasi">야자시 분리</option>
                   </select>
                 </div>
-               <div class="field">
-  <label for="modelSelect">Gemini AI 모델 (고정)</label>
-  <select id="modelSelect" disabled>
-    <option value="gemini-3.5-flash-lite" selected>gemini-3.5-flash-lite (고정)</option>
-  </select>
-</div>
+                <div class="field">
+                  <label for="modelSelect">Gemini AI 모델 (고정)</label>
+                  <select id="modelSelect" disabled>
+                    <option value="gemini-3.5-flash-lite" selected>gemini-3.5-flash-lite (고정)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </details>
 
           <button type="submit" class="cta-glass-btn">내 사주 명식 & AI 운세 열기 →</button>
@@ -323,7 +326,7 @@
           <div id="readingContent" class="reading-content"></div>
         </article>
         <article class="glass-card bento-lucky">
-          <div class="card-title-row"><h3>별빛지기 개운 처방 <span class="sub-hanja">開運</span></h3></div>
+          <div class="card-title-row"><h3>별빛운세정원 개운 처방 <span class="sub-hanja">開運</span></h3></div>
           <div id="luckyGrid" class="lucky-grid"></div>
         </article>
       </section>
@@ -373,7 +376,7 @@
         unknownTime: el("unknownTimeCheck").checked, isLunar: state.calendarType !== "solar", isLeapMonth: state.calendarType === "leap",
         useTrueSolarTime: el("trueSolarCheck").checked, dayBoundary: el("dayBoundarySelect").value,
         focusTopic: state.focusTopic, customQuestion: el("questionInput").value.trim(),
-        model: el("modelSelect").value, useFlex: el("flexTierCheck").checked
+        model: "gemini-3.5-flash-lite", useFlex: el("flexTierCheck").checked
       };
       el("inputSection").classList.add("hidden"); el("resultSection").classList.add("hidden"); el("loadingSection").classList.remove("hidden");
       startLoading();
