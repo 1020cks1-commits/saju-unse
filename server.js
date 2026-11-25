@@ -18,11 +18,10 @@ app.use(cookieParser());
 app.use("/images", express.static(path.join(__dirname, "images")));
 
 const PORT = process.env.PORT || 3000;
-const FIXED_MODEL = "gemini-3.5-flash-lite";
+const MODEL_CANDIDATES = ["gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-4-hydrogen"];
 const JWT_SECRET = process.env.JWT_SECRET || "byeolbit_fallback_secret_2026";
 const REQUIRE_CREDITS = process.env.REQUIRE_CREDITS === "true";
 
-// Supabase DB 연결
 const supabase =
   process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY
     ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
@@ -32,7 +31,6 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// 현재 로그인 회원 확인 헬퍼
 async function getAuthUser(req) {
   try {
     const token = req.cookies?.byeolbit_token;
@@ -51,7 +49,8 @@ async function getAuthUser(req) {
 }
 
 function getBaseUrl(req) {
-  const proto = req.headers["x-forwarded-proto"] || req.protocol || "https";
+  const rawProto = req.headers["x-forwarded-proto"] || req.protocol || "https";
+  const proto = String(rawProto).split(",")[0].trim();
   return `${proto}://${req.get("host")}`;
 }
 
@@ -59,7 +58,8 @@ function setAuthCookie(req, res, user) {
   const token = jwt.sign({ userId: user.id, nickname: user.nickname }, JWT_SECRET, {
     expiresIn: "30d",
   });
-  const isHttps = req.secure || req.headers["x-forwarded-proto"] === "https";
+  const rawProto = req.headers["x-forwarded-proto"] || req.protocol || "";
+  const isHttps = req.secure || String(rawProto).includes("https");
   res.cookie("byeolbit_token", token, {
     httpOnly: true,
     sameSite: "lax",
@@ -68,13 +68,22 @@ function setAuthCookie(req, res, user) {
   });
 }
 
-// ==========================================
-// 1. 카카오 로그인 (OAuth 2.0)
-// ==========================================
+function sendLoginErrorPage(res, title, detail) {
+  res.status(500).send(`
+    <html lang="ko"><body style="background:#0b0c14;color:#fff;font-family:sans-serif;padding:40px;line-height:1.7;">
+      <h2>⚠️ 카카오 로그인 처리 중 문제가 발생했습니다</h2>
+      <p style="color:#fde68a;font-size:1.1rem;"><strong>원인:</strong> ${title}</p>
+      <pre style="background:#181a28;padding:16px;border-radius:12px;overflow:auto;color:#fda4af;">${detail}</pre>
+      <br/><a href="/" style="color:#93c5fd;">← 첫 화면으로 돌아가기</a>
+    </body></html>
+  `);
+}
+
+// 1. 카카오 로그인
 app.get("/auth/kakao", (req, res) => {
   const clientId = process.env.KAKAO_CLIENT_ID;
   if (!clientId) {
-    return res.status(500).send("클라우드타입 환경변수에 KAKAO_CLIENT_ID를 설정해주세요.");
+    return sendLoginErrorPage(res, "KAKAO_CLIENT_ID 환경변수가 비어 있습니다.", "클라우드타입 환경변수를 확인하세요.");
   }
   const redirectUri = `${getBaseUrl(req)}/auth/kakao/callback`;
   const kakaoAuthUrl =
@@ -85,9 +94,17 @@ app.get("/auth/kakao", (req, res) => {
 
 app.get("/auth/kakao/callback", async (req, res) => {
   try {
-    const { code, error } = req.query;
+    const { code, error, error_description } = req.query;
     if (error || !code) {
-      return res.redirect("/?loginError=cancelled");
+      return sendLoginErrorPage(res, "카카오 인증이 취소되었거나 거부되었습니다.", `${error}: ${error_description || ""}`);
+    }
+
+    if (!supabase) {
+      return sendLoginErrorPage(
+        res,
+        "Supabase DB 연결 실패 (SUPABASE_URL 또는 SUPABASE_SERVICE_KEY 확인 필요)",
+        `SUPABASE_URL=${Boolean(process.env.SUPABASE_URL)}, SUPABASE_SERVICE_KEY=${Boolean(process.env.SUPABASE_SERVICE_KEY)}`
+      );
     }
 
     const clientId = process.env.KAKAO_CLIENT_ID;
@@ -110,7 +127,7 @@ app.get("/auth/kakao/callback", async (req, res) => {
     const tokenData = await tokenRes.json();
     if (!tokenData.access_token) {
       console.error("[카카오 토큰 오류]", tokenData);
-      return res.redirect("/?loginError=token");
+      return sendLoginErrorPage(res, "카카오 토큰 발급 실패", JSON.stringify(tokenData, null, 2));
     }
 
     const userRes = await fetch("https://kapi.kakao.com/v2/user/me", {
@@ -123,15 +140,16 @@ app.get("/auth/kakao/callback", async (req, res) => {
       kakaoUser.properties?.nickname ||
       "별빛회원";
 
-    if (!supabase) {
-      return res.redirect("/?loginError=db");
-    }
-
-    let { data: existingUser } = await supabase
+    let { data: existingUser, error: selectErr } = await supabase
       .from("users")
       .select("id, kakao_id, nickname, credits")
       .eq("kakao_id", kakaoId)
-      .single();
+      .maybeSingle();
+
+    if (selectErr) {
+      console.error("[DB 조회 오류]", selectErr);
+      return sendLoginErrorPage(res, "Supabase users 테이블 조회 실패 (SQL 실행 여부를 확인하세요)", JSON.stringify(selectErr, null, 2));
+    }
 
     if (!existingUser) {
       const { data: created, error: insertErr } = await supabase
@@ -139,7 +157,10 @@ app.get("/auth/kakao/callback", async (req, res) => {
         .insert({ kakao_id: kakaoId, nickname, credits: 3 })
         .select("id, kakao_id, nickname, credits")
         .single();
-      if (insertErr) throw insertErr;
+      if (insertErr) {
+        console.error("[DB 저장 오류]", insertErr);
+        return sendLoginErrorPage(res, "Supabase users 테이블 저장 실패", JSON.stringify(insertErr, null, 2));
+      }
       existingUser = created;
     } else if (existingUser.nickname !== nickname) {
       await supabase.from("users").update({ nickname }).eq("id", existingUser.id);
@@ -150,7 +171,7 @@ app.get("/auth/kakao/callback", async (req, res) => {
     res.redirect("/");
   } catch (err) {
     console.error("[카카오 콜백 오류]", err);
-    res.redirect("/?loginError=server");
+    return sendLoginErrorPage(res, "서버 내부 오류", err?.message || String(err));
   }
 });
 
@@ -164,19 +185,13 @@ app.post("/auth/logout", (req, res) => {
   res.json({ ok: true });
 });
 
-// ==========================================
-// 2. 영구 방문자 수 (Supabase DB 저장)
-// ==========================================
+// 2. 영구 방문자 수
 let fallbackVisits = Number(process.env.START_VISITS || 78000);
 
 app.post("/api/visit", async (req, res) => {
   try {
     if (supabase) {
-      const { data } = await supabase
-        .from("site_stats")
-        .select("count")
-        .eq("id", "visits")
-        .single();
+      const { data } = await supabase.from("site_stats").select("count").eq("id", "visits").maybeSingle();
       const nextCount = (data?.count ? Number(data.count) : fallbackVisits) + 1;
       await supabase.from("site_stats").upsert({ id: "visits", count: nextCount });
       return res.json({ count: nextCount });
@@ -188,9 +203,7 @@ app.post("/api/visit", async (req, res) => {
   res.json({ count: fallbackVisits });
 });
 
-// ==========================================
-// 3. 내 사주 보관함 조회 / 삭제
-// ==========================================
+// 3. 보관함 조회 / 삭제
 app.get("/api/history", async (req, res) => {
   const user = await getAuthUser(req);
   if (!user) return res.status(401).json({ error: "로그인이 필요합니다." });
@@ -207,17 +220,11 @@ app.get("/api/history", async (req, res) => {
 app.delete("/api/history/:id", async (req, res) => {
   const user = await getAuthUser(req);
   if (!user) return res.status(401).json({ error: "로그인이 필요합니다." });
-  await supabase
-    .from("saju_history")
-    .delete()
-    .eq("id", Number(req.params.id))
-    .eq("user_id", user.id);
+  await supabase.from("saju_history").delete().eq("id", Number(req.params.id)).eq("user_id", user.id);
   res.json({ ok: true });
 });
 
-// ==========================================
-// 4. 만세력 계산 & Gemini AI 사주 분석
-// ==========================================
+// 4. 만세력 & AI 사주
 const STEM_INFO = {
   갑: { hanja: "甲", element: "목", yinYang: "양", title: "큰 소나무(갑목)" },
   을: { hanja: "乙", element: "목", yinYang: "음", title: "유연한 화초(을목)" },
@@ -252,41 +259,21 @@ function parsePillar(koreanPillar) {
   const branch = koreanPillar[1];
   const sInfo = STEM_INFO[stem] || { hanja: "?", element: "토", yinYang: "양", title: stem };
   const bInfo = BRANCH_INFO[branch] || { hanja: "?", element: "토", animal: "" };
-  return {
-    korean: koreanPillar,
-    hanja: `${sInfo.hanja}${bInfo.hanja}`,
-    stem: { korean: stem, ...sInfo },
-    branch: { korean: branch, ...bInfo },
-  };
+  return { korean: koreanPillar, hanja: `${sInfo.hanja}${bInfo.hanja}`, stem: { korean: stem, ...sInfo }, branch: { korean: branch, ...bInfo } };
 }
 
 function calculateElements(pillars, includeHour) {
   const counts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
-  const active = includeHour
-    ? [pillars.year, pillars.month, pillars.day, pillars.hour]
-    : [pillars.year, pillars.month, pillars.day];
-
+  const active = includeHour ? [pillars.year, pillars.month, pillars.day, pillars.hour] : [pillars.year, pillars.month, pillars.day];
   for (const p of active) {
     if (!p) continue;
     counts[p.stem.element] = (counts[p.stem.element] || 0) + 1;
     counts[p.branch.element] = (counts[p.branch.element] || 0) + 1;
   }
-
   const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
-  const distribution = Object.entries(counts).map(([name, count]) => ({
-    name,
-    count,
-    percent: Math.round((count / total) * 100),
-  }));
-
+  const distribution = Object.entries(counts).map(([name, count]) => ({ name, count, percent: Math.round((count / total) * 100) }));
   const sorted = [...distribution].sort((a, b) => b.count - a.count);
-  return {
-    counts,
-    distribution,
-    dominant: sorted[0].name,
-    lacking: sorted.filter((e) => e.count === 0).map((e) => e.name),
-    weakest: sorted[sorted.length - 1].name,
-  };
+  return { counts, distribution, dominant: sorted[0].name, lacking: sorted.filter((e) => e.count === 0).map((e) => e.name), weakest: sorted[sorted.length - 1].name };
 }
 
 const LITE_SAJU_SCHEMA = {
@@ -301,16 +288,7 @@ const LITE_SAJU_SCHEMA = {
     luckyNumber: { type: Type.STRING },
     oneLineAdvice: { type: Type.STRING },
   },
-  required: [
-    "personaTitle",
-    "todayScore",
-    "todayKeyword",
-    "todayFortune",
-    "briefSajuSummary",
-    "luckyColor",
-    "luckyNumber",
-    "oneLineAdvice",
-  ],
+  required: ["personaTitle", "todayScore", "todayKeyword", "todayFortune", "briefSajuSummary", "luckyColor", "luckyNumber", "oneLineAdvice"],
 };
 
 const FULL_SAJU_SCHEMA = {
@@ -319,34 +297,13 @@ const FULL_SAJU_SCHEMA = {
     personaTitle: { type: Type.STRING },
     keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
     executiveSummary: { type: Type.STRING, description: "사주 전체의 큰 그림과 핵심 총평 (최소 700자 이상)" },
-    chartDeepAnalysis: {
-      type: Type.STRING,
-      description: "조후·억부, 신강/신약, 용신·희신·기신, 지장간·12운성·합충형파해, 공망 정밀 해설 (최소 1,600자 이상, [소제목] 구분)",
-    },
-    comprehensiveFortune: {
-      type: Type.STRING,
-      description: "타고난 종합운, 초년·중년·말년 흐름, 잠재력과 리스크 요인 심층 분석 (최소 1,500자 이상, [소제목] 구분)",
-    },
-    wealthAndInvestment: {
-      type: Type.STRING,
-      description: "재물 그릇, 근로/사업/투자 적합성, 주식·부동산·현금 전략, 손재 방지법 (최소 1,600자 이상, [소제목] 구분)",
-    },
-    careerAndJobChange: {
-      type: Type.STRING,
-      description: "최적 직업군 Top 5, 조직 vs 사업 적합도, 이직·승진 타이밍, 처세술 (최소 1,600자 이상, [소제목] 구분)",
-    },
-    loveAndRelationships: {
-      type: Type.STRING,
-      description: "연애 패턴, 일지(배우자궁)와 결혼운, 최고 궁합 vs 피할 유형, 귀인운 (최소 1,500자 이상, [소제목] 구분)",
-    },
-    newYear2027AndDaewoon: {
-      type: Type.STRING,
-      description: "10년 대운, 2026 병오년 마무리, 2027 정미년 상반기·하반기 월별 흐름과 중장기 로드맵 (최소 1,800자 이상, [소제목] 구분)",
-    },
-    questionAnswer: {
-      type: Type.STRING,
-      description: "선택한 분야와 직접 남긴 질문에 대한 명리학적 근거 기반 행동 지침 (최소 1,000자 이상, [소제목] 구분)",
-    },
+    chartDeepAnalysis: { type: Type.STRING, description: "조후·억부, 신강/신약, 용신·희신·기신, 지장간·12운성·합충형파해, 공망 정밀 해설 (최소 1,600자 이상, [소제목] 구분)" },
+    comprehensiveFortune: { type: Type.STRING, description: "타고난 종합운, 초년·중년·말년 흐름, 잠재력과 리스크 요인 (최소 1,500자 이상, [소제목] 구분)" },
+    wealthAndInvestment: { type: Type.STRING, description: "재물 그릇, 근로/사업/투자 적합성, 주식·부동산·현금 전략, 손재 방지법 (최소 1,600자 이상, [소제목] 구분)" },
+    careerAndJobChange: { type: Type.STRING, description: "최적 직업군 Top 5, 조직 vs 사업 적합도, 이직·승진 타이밍, 처세술 (최소 1,600자 이상, [소제목] 구분)" },
+    loveAndRelationships: { type: Type.STRING, description: "연애 패턴, 일지(배우자궁)와 결혼운, 최고 궁합 vs 피할 유형, 귀인운 (최소 1,500자 이상, [소제목] 구분)" },
+    newYear2027AndDaewoon: { type: Type.STRING, description: "10년 대운, 2026 병오년 마무리, 2027 정미년 상반기·하반기 월별 흐름과 중장기 로드맵 (최소 1,800자 이상, [소제목] 구분)" },
+    questionAnswer: { type: Type.STRING, description: "선택한 분야와 직접 남긴 질문에 대한 명리학적 근거 기반 행동 지침 (최소 1,000자 이상, [소제목] 구분)" },
     luckyGuide: {
       type: Type.OBJECT,
       properties: {
@@ -360,22 +317,11 @@ const FULL_SAJU_SCHEMA = {
       required: ["colorName", "colorHex", "numbers", "direction", "luckyItem", "dailyRitual"],
     },
   },
-  required: [
-    "personaTitle",
-    "keywords",
-    "executiveSummary",
-    "chartDeepAnalysis",
-    "comprehensiveFortune",
-    "wealthAndInvestment",
-    "careerAndJobChange",
-    "loveAndRelationships",
-    "newYear2027AndDaewoon",
-    "questionAnswer",
-    "luckyGuide",
-  ],
+  required: ["personaTitle", "keywords", "executiveSummary", "chartDeepAnalysis", "comprehensiveFortune", "wealthAndInvestment", "careerAndJobChange", "loveAndRelationships", "newYear2027AndDaewoon", "questionAnswer", "luckyGuide"],
 };
 
-async function callGeminiWithFlex({ apiKey, model, systemInstruction, prompt, schema, maxTokens, useFlex }) {
+// 503/429 폭주 시 자동으로 다른 최신 모델로 우회 호출
+async function callGeminiSmart({ apiKey, systemInstruction, prompt, schema, maxTokens, useFlex }) {
   const ai = new GoogleGenAI({ apiKey });
   const baseConfig = {
     systemInstruction,
@@ -385,30 +331,35 @@ async function callGeminiWithFlex({ apiKey, model, systemInstruction, prompt, sc
     maxOutputTokens: maxTokens,
   };
 
-  if (useFlex) {
-    for (let attempt = 0; attempt < 2; attempt++) {
+  let lastErr = null;
+  for (const model of MODEL_CANDIDATES) {
+    if (useFlex) {
       try {
-        const response = await ai.models.generateContent({
+        const res = await ai.models.generateContent({
           model,
           contents: prompt,
-          config: { ...baseConfig, serviceTier: "flex", httpOptions: { timeout: 180000 } },
+          config: { ...baseConfig, serviceTier: "flex", httpOptions: { timeout: 120000 } },
         });
-        return { text: response.text, usedTier: "flex" };
+        return { text: res.text, model, usedTier: "flex" };
       } catch (err) {
-        const msg = String(err?.message || err);
-        const status = err?.status || err?.code;
-        if (status === 400 || status === 403 || msg.includes("400") || msg.includes("not supported")) break;
-        if (attempt === 0) await new Promise((r) => setTimeout(r, 1500));
+        lastErr = err;
+        console.warn(`[${model} Flex 실패]`, err?.status || "", err?.message || err);
       }
     }
-  }
 
-  const response = await ai.models.generateContent({
-    model,
-    contents: prompt,
-    config: { ...baseConfig, httpOptions: { timeout: 180000 } },
-  });
-  return { text: response.text, usedTier: useFlex ? "standard-fallback" : "standard" };
+    try {
+      const res = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: { ...baseConfig, httpOptions: { timeout: 150000 } },
+      });
+      return { text: res.text, model, usedTier: useFlex ? "standard-fallback" : "standard" };
+    } catch (err) {
+      lastErr = err;
+      console.warn(`[${model} Standard 실패 -> 다음 모델 전환]`, err?.status || "", err?.message || err);
+    }
+  }
+  throw lastErr || new Error("모든 AI 모델이 일시적으로 혼잡합니다. 잠시 후 다시 시도해주세요.");
 }
 
 app.post("/api/saju", async (req, res) => {
@@ -440,14 +391,12 @@ app.post("/api/saju", async (req, res) => {
 
     const isLite = mode === "lite";
 
-    // 추후 유료화 전환(REQUIRE_CREDITS=true) 시 1만자 정밀 풀이는 로그인 & 이용권 확인
+    // 1만자 정밀 풀이는 카카오 로그인 필수!
     if (!isLite && !authUser) {
-      return res.status(401).json({ error: "1만자 정밀 풀이는 카카오 로그인 후 이용하실 수 있습니다." });
+      return res.status(401).json({ error: "1만자 정밀 사주는 카카오 로그인 후 이용하실 수 있습니다." });
     }
     if (!isLite && REQUIRE_CREDITS && authUser.credits <= 0) {
       return res.status(402).json({ error: "보유한 정밀 풀이 이용권이 부족합니다." });
-    }
-      }
     }
 
     if (!year || !month || !day) {
@@ -475,12 +424,7 @@ app.post("/api/saju", async (req, res) => {
     }
 
     const obj = sajuRaw.toObject();
-    const pillars = {
-      year: parsePillar(obj.year),
-      month: parsePillar(obj.month),
-      day: parsePillar(obj.day),
-      hour: unknownTime ? null : parsePillar(obj.hour),
-    };
+    const pillars = { year: parsePillar(obj.year), month: parsePillar(obj.month), day: parsePillar(obj.day), hour: unknownTime ? null : parsePillar(obj.hour) };
     const elements = calculateElements(pillars, !unknownTime);
     const tenGods = sajuRaw.tenGods || {};
     const voidBranches = sajuRaw.voidBranches || [];
@@ -496,13 +440,7 @@ app.post("/api/saju", async (req, res) => {
 
     const currentYear = new Date().getFullYear();
     const approxKoreanAge = currentYear - Number(year) + 1;
-    const koreaTodayText = new Date().toLocaleDateString("ko-KR", {
-      timeZone: "Asia/Seoul",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      weekday: "long",
-    });
+    const koreaTodayText = new Date().toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric", weekday: "long" });
 
     const systemInstruction = isLite
       ? `당신은 다정하고 명쾌한 사주 상담가 '별빛운세정원'입니다. 오늘은 ${koreaTodayText}입니다. 사주 원국과 오늘의 기운을 바탕으로 '오늘의 운세'와 '핵심 사주 요약'만 알차게 작성해주세요.`
@@ -544,9 +482,8 @@ app.post("/api/saju", async (req, res) => {
 
 위 모든 명리 데이터를 빠짐없이 분석하여 총 1만자 이상의 프리미엄 사주 풀이 JSON을 작성해주세요.`.trim();
 
-    const { text, usedTier } = await callGeminiWithFlex({
+    const { text, model: usedModel, usedTier } = await callGeminiSmart({
       apiKey,
-      model: FIXED_MODEL,
       systemInstruction,
       prompt,
       schema: isLite ? LITE_SAJU_SCHEMA : FULL_SAJU_SCHEMA,
@@ -555,50 +492,19 @@ app.post("/api/saju", async (req, res) => {
     });
 
     const reading = JSON.parse(String(text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
-
     const totalChars = isLite
       ? (reading.todayFortune?.length || 0) + (reading.briefSajuSummary?.length || 0)
-      : [
-          reading.executiveSummary,
-          reading.chartDeepAnalysis,
-          reading.comprehensiveFortune,
-          reading.wealthAndInvestment,
-          reading.careerAndJobChange,
-          reading.loveAndRelationships,
-          reading.newYear2027AndDaewoon,
-          reading.questionAnswer,
-        ]
-          .filter(Boolean)
-          .join("").length;
+      : [reading.executiveSummary, reading.chartDeepAnalysis, reading.comprehensiveFortune, reading.wealthAndInvestment, reading.careerAndJobChange, reading.loveAndRelationships, reading.newYear2027AndDaewoon, reading.questionAnswer].filter(Boolean).join("").length;
 
-    const birthText = `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")} ${
-      unknownTime ? "시간 미상" : `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`
-    }`;
+    const birthText = `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")} ${unknownTime ? "시간 미상" : `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`}`;
 
     const resultPayload = {
       mode: isLite ? "lite" : "full",
-      meta: {
-        name,
-        gender,
-        solarOrLunar: isLunar ? (isLeapMonth ? "음력(윤달)" : "음력") : "양력",
-        birthText,
-        todayText: koreaTodayText,
-        approxKoreanAge,
-        model: FIXED_MODEL,
-        usedTier,
-        totalChars,
-      },
-      chart: {
-        pillars,
-        tenGods,
-        voidBranches,
-        elements,
-        luckPillars: { forward: sajuRaw.luckPillars?.forward ?? true, startAge: sajuRaw.luckPillars?.startAge ?? 1, list: luckPillars },
-      },
+      meta: { name, gender, solarOrLunar: isLunar ? (isLeapMonth ? "음력(윤달)" : "음력") : "양력", birthText, todayText: koreaTodayText, approxKoreanAge, model: usedModel, usedTier, totalChars },
+      chart: { pillars, tenGods, voidBranches, elements, luckPillars: { forward: sajuRaw.luckPillars?.forward ?? true, startAge: sajuRaw.luckPillars?.startAge ?? 1, list: luckPillars } },
       reading,
     };
 
-    // 로그인 회원이면 DB 사주 보관함에 자동 저장 (+ 유료 모드일 땐 이용권 차감)
     if (authUser && supabase) {
       await supabase.from("saju_history").insert({
         user_id: authUser.id,
@@ -607,12 +513,8 @@ app.post("/api/saju", async (req, res) => {
         birth_summary: `${resultPayload.meta.solarOrLunar} ${birthText}`,
         result_json: resultPayload,
       });
-
       if (!isLite && REQUIRE_CREDITS) {
-        await supabase
-          .from("users")
-          .update({ credits: authUser.credits - 1 })
-          .eq("id", authUser.id);
+        await supabase.from("users").update({ credits: authUser.credits - 1 }).eq("id", authUser.id);
       }
     }
 
