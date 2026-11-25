@@ -1,7 +1,7 @@
 {
-  "name": "cheongwoldang-ai-saju",
+  "name": "byeolbit-ai-saju",
   "version": "1.0.0",
-  "description": "KASI 정밀 만세력 + Gemini Flex AI 사주 웹앱",
+  "description": "KASI 정밀 만세력 + Gemini AI + 카카오 로그인 + Supabase DB 사주 플랫폼",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -9,8 +9,11 @@
   },
   "dependencies": {
     "@google/genai": "^3.0.0",
+    "@supabase/supabase-js": "^2.49.1",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
     "manseryeok": "^2.0.0"
   }
 }
