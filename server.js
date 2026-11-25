@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import { GoogleGenAI, Type } from "@google/genai";
 import { calculateFourPillars } from "manseryeok";
@@ -16,6 +17,26 @@ const PORT = process.env.PORT || 3000;
 const FIXED_MODEL = "gemini-3.5-flash-lite";
 
 app.get("/", (req, res) => {
+  const VISIT_FILE = path.join(__dirname, "visits.json");
+const BASE_VISITS = Number(process.env.START_VISITS || 78000);
+let currentVisits = BASE_VISITS;
+
+try {
+  if (fs.existsSync(VISIT_FILE)) {
+    const saved = JSON.parse(fs.readFileSync(VISIT_FILE, "utf8"));
+    if (typeof saved.count === "number" && saved.count >= BASE_VISITS) {
+      currentVisits = saved.count;
+    }
+  }
+} catch {}
+
+app.post("/api/visit", (req, res) => {
+  currentVisits += 1;
+  try {
+    fs.writeFileSync(VISIT_FILE, JSON.stringify({ count: currentVisits }));
+  } catch {}
+  res.json({ count: currentVisits });
+});
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
