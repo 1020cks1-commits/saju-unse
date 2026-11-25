@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>별빛운세정원 | Gemini AI 사주 명리관</title>
+  <title>별빛운세정원 | 프리미엄 정밀 AI 사주</title>
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -14,10 +14,10 @@
       --glass-border: rgba(255, 255, 255, 0.14);
       --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.22);
       --text-primary: #f8fafc;
-      --text-secondary: rgba(226, 232, 240, 0.72);
-      --text-muted: rgba(148, 163, 184, 0.65);
+      --text-secondary: rgba(226, 232, 240, 0.78);
+      --text-muted: rgba(148, 163, 184, 0.72);
       --el-wood: #34d399; --el-fire: #fb7185; --el-earth: #fbbf24; --el-metal: #e2e8f0; --el-water: #60a5fa;
-      --aurora-1: rgba(79, 70, 229, 0.48); --aurora-2: rgba(147, 51, 234, 0.36); --aurora-3: rgba(14, 165, 233, 0.34);
+      --aurora-1: rgba(79, 70, 229, 0.44); --aurora-2: rgba(147, 51, 234, 0.34); --aurora-3: rgba(14, 165, 233, 0.30);
       --accent: #818cf8;
     }
     body[data-element="목"] { --aurora-1: rgba(16,185,129,.42); --aurora-2: rgba(6,182,212,.34); --aurora-3: rgba(99,102,241,.28); --accent: #34d399; }
@@ -25,27 +25,28 @@
     body[data-element="토"] { --aurora-1: rgba(245,158,11,.38); --aurora-2: rgba(217,119,6,.28); --aurora-3: rgba(124,58,237,.30); --accent: #fbbf24; }
     body[data-element="금"] { --aurora-1: rgba(148,163,184,.38); --aurora-2: rgba(56,189,248,.32); --aurora-3: rgba(99,102,241,.30); --accent: #cbd5e1; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-   body {
+    body {
       font-family: "Pretendard", sans-serif;
       background:
-        linear-gradient(rgba(7, 8, 15, 0.45), rgba(7, 8, 15, 0.65)),
-        url("/images/bg.png") center / cover no-repeat fixed;
+        linear-gradient(rgba(7, 8, 15, 0.48), rgba(7, 8, 15, 0.72)),
+        url("/images/bg.png") center / cover no-repeat fixed,
+        var(--bg-obsidian);
       color: var(--text-primary);
       min-height: 100vh;
       overflow-x: hidden;
       line-height: 1.6;
     }
     .serif-heading, .serif-sub { font-family: "Noto Serif KR", serif; }
-    .aurora-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+    .aurora-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; opacity: 0.45; }
     .orb { position: absolute; border-radius: 50%; filter: blur(110px); transition: background 1.4s ease; animation: floatOrb 22s ease-in-out infinite alternate; }
     .orb-1 { width: 55vw; height: 55vw; max-width: 720px; max-height: 720px; top: -15%; left: -10%; background: radial-gradient(circle, var(--aurora-1), transparent 70%); }
     .orb-2 { width: 50vw; height: 50vw; max-width: 660px; max-height: 660px; top: 20%; right: -12%; background: radial-gradient(circle, var(--aurora-2), transparent 70%); animation-delay: -6s; }
     .orb-3 { width: 48vw; height: 48vw; max-width: 620px; max-height: 620px; bottom: -18%; left: 18%; background: radial-gradient(circle, var(--aurora-3), transparent 70%); animation-delay: -12s; }
     @keyframes floatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(40px, 30px) scale(1.08); } }
-    .app-shell { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
+    .app-shell { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
     .glass-card { background: var(--glass-bg); backdrop-filter: blur(26px) saturate(165%); -webkit-backdrop-filter: blur(26px) saturate(165%); border: 1px solid var(--glass-border); border-radius: 28px; box-shadow: var(--glass-highlight), 0 24px 48px -12px rgba(0, 0, 0, 0.58); }
     .glass-pill { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 999px; box-shadow: var(--glass-highlight); }
-    .top-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 22px; margin-bottom: 28px; }
+    .top-nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 22px; margin-bottom: 28px; flex-wrap: wrap; gap: 10px; }
     .brand { display: flex; align-items: center; gap: 14px; }
     .brand-emblem { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 1.15rem; background: linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.04)); border: 1px solid rgba(255,255,255,.26); }
     .brand-title { font-size: 1.05rem; font-weight: 700; }
@@ -55,6 +56,8 @@
     .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: #34d399; box-shadow: 0 0 10px #34d399; }
     .input-panel { max-width: 720px; margin: 0 auto; padding: 36px; }
     .panel-header { text-align: center; margin-bottom: 30px; }
+    .hero-portrait { width: 156px; height: 156px; margin: 0 auto 20px; padding: 4px; border-radius: 50%; background: linear-gradient(135deg, rgba(251,191,36,.65), rgba(168,85,247,.65)); box-shadow: 0 0 36px rgba(168,85,247,.42), 0 0 18px rgba(251,191,36,.22); }
+    .hero-portrait img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
     .eyebrow { display: inline-block; font-size: 0.72rem; letter-spacing: 0.22em; color: var(--accent); font-weight: 600; margin-bottom: 10px; }
     .panel-header h2 { font-size: 1.75rem; line-height: 1.38; margin-bottom: 10px; }
     .sub-copy { font-size: 0.9rem; color: var(--text-secondary); }
@@ -64,7 +67,7 @@
     .field { display: flex; flex-direction: column; gap: 8px; }
     label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
     .hint-inline { font-weight: 400; font-size: 0.76rem; color: var(--text-muted); }
-    input[type="text"], input[type="number"], select { width: 100%; padding: 13px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,.14); background: rgba(15,23,42,.45); color: var(--text-primary); font-family: inherit; font-size: 0.95rem; outline: none; }
+    input[type="text"], input[type="number"], select { width: 100%; padding: 13px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,.14); background: rgba(15,23,42,.5); color: var(--text-primary); font-family: inherit; font-size: 0.95rem; outline: none; }
     select:disabled { opacity: 0.85; cursor: not-allowed; }
     .segmented-control { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 16px; background: rgba(15,23,42,.5); border: 1px solid rgba(255,255,255,.12); }
     .seg-btn { border: none; background: transparent; color: var(--text-secondary); padding: 10px; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
@@ -93,8 +96,8 @@
     .switch-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; }
     .switch-row strong { font-size: 0.85rem; display: block; }
     .switch-row p { font-size: 0.76rem; color: var(--text-muted); }
-    .cta-glass-btn { margin-top: 6px; padding: 17px 24px; border-radius: 18px; border: 1px solid rgba(255,255,255,.32); background: linear-gradient(135deg, rgba(129,140,248,.45), rgba(168,85,247,.45)); color: #fff; font-size: 1.02rem; font-weight: 700; cursor: pointer; }
-    .loading-panel { max-width: 520px; margin: 40px auto; padding: 56px 32px; text-align: center; }
+    .cta-glass-btn { margin-top: 6px; padding: 17px 24px; border-radius: 18px; border: 1px solid rgba(255,255,255,.32); background: linear-gradient(135deg, rgba(129,140,248,.48), rgba(168,85,247,.48)); color: #fff; font-size: 1.02rem; font-weight: 700; cursor: pointer; }
+    .loading-panel { max-width: 540px; margin: 40px auto; padding: 56px 32px; text-align: center; }
     .celestial-loader { position: relative; width: 110px; height: 110px; margin: 0 auto 28px; display: grid; place-items: center; }
     .ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; }
     .ring-outer { border-top-color: #818cf8; animation: spin 2.2s linear infinite; }
@@ -103,9 +106,10 @@
     .hidden { display: none !important; }
     .result-bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
     .result-toolbar { grid-column: span 12; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-    .toolbar-right { display: flex; align-items: center; gap: 10px; }
+    .toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .ghost-glass-btn { padding: 9px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: #fff; font-size: 0.85rem; cursor: pointer; }
     .tier-badge { font-size: 0.78rem; padding: 6px 12px; border-radius: 999px; background: rgba(52,211,153,.14); border: 1px solid rgba(52,211,153,.32); color: #a7f3d0; }
+    .char-count-badge { font-size: 0.78rem; padding: 6px 12px; border-radius: 999px; background: rgba(251,191,36,.14); border: 1px solid rgba(251,191,36,.35); color: #fde68a; }
     .bento-hero { grid-column: span 12; padding: 30px; }
     .bento-pillars { grid-column: span 7; padding: 26px; }
     .bento-elements { grid-column: span 5; padding: 26px; }
@@ -120,7 +124,7 @@
     .daymaster-orb .label { font-size: 0.7rem; color: var(--text-secondary); }
     .keyword-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
     .kw-chip { font-size: 0.82rem; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,.08); }
-    .hero-summary { font-size: 0.98rem; color: var(--text-secondary); line-height: 1.72; }
+    .hero-summary { font-size: 0.98rem; color: var(--text-secondary); line-height: 1.78; white-space: pre-line; }
     .card-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
     .sub-hanja { font-family: "Noto Serif KR", serif; font-weight: 400; font-size: 0.82rem; color: var(--text-muted); margin-left: 6px; }
     .mini-info-badge { font-size: 0.76rem; color: var(--text-secondary); padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.06); }
@@ -146,15 +150,16 @@
     .daewoon-hanja { font-family: "Noto Serif KR", serif; font-size: 1.15rem; font-weight: 700; margin: 4px 0 2px; }
     .daewoon-kor { font-size: 0.8rem; color: var(--text-secondary); }
     .reading-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,.09); }
-    .tab-btn { padding: 8px 14px; border-radius: 12px; border: 1px solid transparent; background: rgba(255,255,255,.04); color: var(--text-secondary); font-size: 0.86rem; font-weight: 600; cursor: pointer; }
-    .tab-btn.active { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.28); color: #fff; }
-    .reading-content { font-size: 0.98rem; line-height: 1.82; color: rgba(241,245,249,.9); white-space: pre-line; }
+    .tab-btn { padding: 8px 13px; border-radius: 12px; border: 1px solid transparent; background: rgba(255,255,255,.04); color: var(--text-secondary); font-size: 0.84rem; font-weight: 600; cursor: pointer; }
+    .tab-btn.active { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.3); color: #fff; }
+    .reading-content { font-size: 0.98rem; line-height: 1.88; color: rgba(241,245,249,.92); white-space: pre-line; }
+    .reading-sub-meta { margin-top: 16px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,.12); font-size: 0.8rem; color: var(--text-muted); text-align: right; }
     .lucky-grid { display: flex; flex-direction: column; gap: 12px; }
     .lucky-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,.04); }
     .lucky-label { font-size: 0.8rem; color: var(--text-muted); }
     .lucky-val { display: inline-flex; align-items: center; gap: 8px; font-size: 0.92rem; font-weight: 600; }
     .color-swatch { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(255,255,255,.4); }
-    .lucky-ritual { padding: 14px; border-radius: 16px; background: rgba(255,255,255,.06); font-size: 0.88rem; color: var(--text-secondary); }
+    .lucky-ritual { padding: 14px; border-radius: 16px; background: rgba(255,255,255,.06); font-size: 0.88rem; color: var(--text-secondary); line-height: 1.65; }
     .app-footer { margin-top: 40px; text-align: center; font-size: 0.78rem; color: var(--text-muted); }
     @media (max-width: 860px) { .bento-pillars, .bento-elements, .bento-reading, .bento-lucky { grid-column: span 12; } }
     @media (max-width: 600px) { .input-panel { padding: 24px 18px; } .two-col { grid-template-columns: 1fr; } .pillars-grid { gap: 8px; } }
@@ -171,22 +176,22 @@
       <div class="brand">
         <span class="brand-emblem">✨</span>
         <div>
-          <h1 class="brand-title">별빛운세정원 <span class="serif-sub">사주,운세</span></h1>
-          <p class="brand-desc">KASI 정밀 만세력 × Gemini AI 명리 리포트</p>
+          <h1 class="brand-title">별빛운세정원 <span class="serif-sub">星光庭園</span></h1>
+          <p class="brand-desc">KASI 정밀 만세력 × Gemini 1만자 심층 명리 리포트</p>
         </div>
       </div>
-      <span class="status-badge"><span class="pulse-dot"></span> KASI 24절기 보정</span>
+      <span class="status-badge"><span class="pulse-dot"></span> KASI 24절기 · 지장간 · 합충 정밀 분석</span>
     </header>
 
     <main>
       <section id="inputSection" class="glass-card input-panel">
         <div class="panel-header">
-          <div style="width:156px;height:156px;margin:0 auto 20px;padding:4px;border-radius:50%;background:linear-gradient(135deg,rgba(251,191,36,0.65),rgba(168,85,247,0.65));box-shadow:0 0 36px rgba(168,85,247,0.42),0 0 18px rgba(251,191,36,0.22);">
-    <img src="/images/character.png" alt="별빛운세정원" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" />
-  </div>
+          <div class="hero-portrait">
+            <img src="/images/character.png" alt="별빛운세정원" onerror="this.parentElement.style.display='none'" />
+          </div>
           <span class="eyebrow">DESTINY BLUEPRINT</span>
           <h2 class="serif-heading">당신의 생년월일시에 담긴<br />운명의 좌표를 읽어드립니다</h2>
-          <p class="sub-copy">정확한 절입 시각과 한반도 진태양시를 계산한 뒤 AI가 입체적으로 풀이합니다.</p>
+          <p class="sub-copy">원국·지장간·12운성·합충형파해까지 정밀 계산하여 1만자 이상 깊이 있게 풀이합니다.</p>
         </div>
 
         <form id="sajuForm" class="saju-form">
@@ -253,10 +258,10 @@
               <button type="button" class="topic-chip active" data-topic="종합운">✨ 종합운</button>
               <button type="button" class="topic-chip" data-topic="재물·투자운">💎 재물·투자</button>
               <button type="button" class="topic-chip" data-topic="연애·인연운">🌙 연애·인연</button>
-              <button type="button" class="topic-chip" data-topic="직업·커리어">🧭 커리어·이직</button>
+              <button type="button" class="topic-chip" data-topic="직업·커리어·이직">🧭 커리어·이직</button>
               <button type="button" class="topic-chip" data-topic="2027 신년운세">🔥 2027 신년운세</button>
             </div>
-            <input type="text" id="questionInput" class="mt-10" placeholder="구체적인 고민이 있다면 적어주세요" maxlength="120" />
+            <input type="text" id="questionInput" class="mt-10" placeholder="구체적인 고민이 있다면 적어주세요 (예: 내년 이직과 부동산 투자 시기가 궁금해요)" maxlength="150" />
           </div>
 
           <details class="advanced-glass">
@@ -289,22 +294,24 @@
             </div>
           </details>
 
-          <button type="submit" class="cta-glass-btn">내 사주 명식 & AI 운세 열기 →</button>
+          <button type="submit" class="cta-glass-btn">1만자 정밀 사주 명식 & AI 운세 열기 →</button>
         </form>
       </section>
 
       <section id="loadingSection" class="glass-card loading-panel hidden">
         <div class="celestial-loader"><div class="ring ring-outer"></div><div class="ring ring-inner"></div><div class="serif-heading">陰陽</div></div>
-        <h3 class="serif-heading">천간의 기운을 모으고 있습니다</h3>
-        <p id="loadingStepText" style="margin-top:10px;color:var(--text-secondary);">KASI 정본 만세력으로 사주팔자를 계산 중...</p>
+        <h3 class="serif-heading">1만자 이상의 정밀 명리 리포트를 작성 중입니다</h3>
+        <p id="loadingStepText" style="margin-top:12px;color:var(--text-secondary);">KASI 정본 만세력으로 원국과 지장간을 계산 중...</p>
+        <p id="loadingTimerText" style="margin-top:8px;font-size:.82rem;color:var(--text-muted);">경과 시간: 0초 (정밀 집필로 약 25~45초 소요됩니다)</p>
       </section>
 
       <section id="resultSection" class="result-bento hidden">
         <div class="result-toolbar">
           <button type="button" id="resetBtn" class="ghost-glass-btn">← 다시 입력하기</button>
           <div class="toolbar-right">
+            <span id="charCountBadge" class="char-count-badge"></span>
             <span id="tierBadge" class="tier-badge"></span>
-            <button type="button" id="copyBtn" class="ghost-glass-btn">📋 요약 복사</button>
+            <button type="button" id="copyBtn" class="ghost-glass-btn">📋 전체 리포트 복사</button>
           </div>
         </div>
         <article class="glass-card bento-hero">
@@ -330,12 +337,15 @@
         <article class="glass-card bento-reading">
           <div class="reading-tabs">
             <button type="button" class="tab-btn active" data-tab="questionAnswer">🎯 맞춤 해답</button>
-            <button type="button" class="tab-btn" data-tab="personalityAndAptitude">🌿 기질·적성</button>
-            <button type="button" class="tab-btn" data-tab="wealthAndCareer">💎 재물·직업</button>
+            <button type="button" class="tab-btn" data-tab="chartDeepAnalysis">📜 원국·용신·합충</button>
+            <button type="button" class="tab-btn" data-tab="comprehensiveFortune">✨ 종합운</button>
+            <button type="button" class="tab-btn" data-tab="wealthAndInvestment">💎 재물·투자</button>
+            <button type="button" class="tab-btn" data-tab="careerAndJobChange">🧭 커리어·이직</button>
             <button type="button" class="tab-btn" data-tab="loveAndRelationships">🌙 연애·인연</button>
-            <button type="button" class="tab-btn" data-tab="yearlyFlow">🌊 대운·세운</button>
+            <button type="button" class="tab-btn" data-tab="newYear2027AndDaewoon">🔥 2027 신년·대운</button>
           </div>
           <div id="readingContent" class="reading-content"></div>
+          <div id="tabLengthNote" class="reading-sub-meta"></div>
         </article>
         <article class="glass-card bento-lucky">
           <div class="card-title-row"><h3>별빛운세정원 개운 처방 <span class="sub-hanja">開運</span></h3></div>
@@ -373,10 +383,20 @@
     el("unknownTimeCheck").addEventListener("change", (e) => el("timeInputGroup").classList.toggle("disabled", e.target.checked));
 
     let loadingTimer = null;
+    let secTimer = null;
     function startLoading() {
-      const steps = ["KASI 정본 만세력으로 사주팔자를 계산 중...", "음양오행의 균형을 분석하는 중...", "Gemini AI가 맞춤 명리 리포트를 집필 중..."];
-      let i = 0; el("loadingStepText").textContent = steps[0];
-      loadingTimer = setInterval(() => { i = (i + 1) % steps.length; el("loadingStepText").textContent = steps[i]; }, 2300);
+      const steps = [
+        "KASI 정본 만세력으로 4기둥·지장간·12운성을 계산 중...",
+        "원국의 합충형파해와 용신·희신을 도출하는 중...",
+        "재물·투자·커리어·연애·인연 정밀 분석을 집필 중...",
+        "2027년 정미년 분기별 신년운세와 대운 흐름을 작성 중...",
+        "1만자 이상 최종 리포트를 다듬는 중..."
+      ];
+      let i = 0; let sec = 0;
+      el("loadingStepText").textContent = steps[0];
+      el("loadingTimerText").textContent = "경과 시간: 0초 (정밀 집필로 약 25~45초 소요됩니다)";
+      loadingTimer = setInterval(() => { i = Math.min(i + 1, steps.length - 1); el("loadingStepText").textContent = steps[i]; }, 6000);
+      secTimer = setInterval(() => { sec += 1; el("loadingTimerText").textContent = `경과 시간: ${sec}초 (정밀 집필로 약 25~45초 소요됩니다)`; }, 1000);
     }
 
     el("sajuForm").addEventListener("submit", async (e) => {
@@ -388,7 +408,7 @@
         unknownTime: el("unknownTimeCheck").checked, isLunar: state.calendarType !== "solar", isLeapMonth: state.calendarType === "leap",
         useTrueSolarTime: el("trueSolarCheck").checked, dayBoundary: el("dayBoundarySelect").value,
         focusTopic: state.focusTopic, customQuestion: el("questionInput").value.trim(),
-        model: "gemini-3.5-flash-lite", useFlex: el("flexTierCheck").checked
+        useFlex: el("flexTierCheck").checked
       };
       el("inputSection").classList.add("hidden"); el("resultSection").classList.add("hidden"); el("loadingSection").classList.remove("hidden");
       startLoading();
@@ -401,13 +421,21 @@
         window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (err) {
         alert(err.message); el("loadingSection").classList.add("hidden"); el("inputSection").classList.remove("hidden");
-      } finally { clearInterval(loadingTimer); }
+      } finally { clearInterval(loadingTimer); clearInterval(secTimer); }
     });
+
+    function showActiveTabContent() {
+      if (!state.lastResult) return;
+      const text = state.lastResult.reading[state.activeTab] || "";
+      el("readingContent").textContent = text;
+      el("tabLengthNote").textContent = `현재 항목 분량: ${text.length.toLocaleString()}자`;
+    }
 
     function renderResult(data) {
       const { meta, chart, reading } = data;
       const dayStem = chart.pillars.day.stem;
       document.body.setAttribute("data-element", dayStem.element);
+      el("charCountBadge").textContent = `📜 총 ${(meta.totalChars || 0).toLocaleString()}자 정밀 리포트`;
       el("tierBadge").textContent = meta.usedTier === "flex" ? `⚡ ${meta.model} · Flex 50% 절감` : meta.usedTier === "standard-fallback" ? `🛡️ ${meta.model} · Standard 전환` : `✨ ${meta.model}`;
       el("userMetaPill").textContent = `${meta.name}님 · ${meta.gender === "male" ? "남성" : "여성"} · ${meta.solarOrLunar} ${meta.birthText}`;
       el("personaTitle").textContent = reading.personaTitle;
@@ -440,14 +468,15 @@
 
       state.activeTab = "questionAnswer";
       document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === state.activeTab));
-      el("readingContent").textContent = reading[state.activeTab] || "";
+      showActiveTabContent();
 
       const lucky = reading.luckyGuide;
       el("luckyGrid").innerHTML = `
         <div class="lucky-row"><span class="lucky-label">행운의 컬러</span><span class="lucky-val"><span class="color-swatch" style="background:${escapeHtml(lucky.colorHex)}"></span>${escapeHtml(lucky.colorName)}</span></div>
         <div class="lucky-row"><span class="lucky-label">행운의 숫자</span><span class="lucky-val">${escapeHtml(lucky.numbers)}</span></div>
         <div class="lucky-row"><span class="lucky-label">길한 방위</span><span class="lucky-val">${escapeHtml(lucky.direction)}</span></div>
-        <div class="lucky-ritual"><strong style="display:block;color:#fff;margin-bottom:4px;">✨ 오늘의 개운 액션</strong>${escapeHtml(lucky.dailyRitual)}</div>
+        <div class="lucky-row"><span class="lucky-label">개운 아이템</span><span class="lucky-val">${escapeHtml(lucky.luckyItem)}</span></div>
+        <div class="lucky-ritual"><strong style="display:block;color:#fff;margin-bottom:4px;">✨ 오늘의 개운 루틴</strong>${escapeHtml(lucky.dailyRitual)}</div>
       `;
     }
 
@@ -456,14 +485,29 @@
       state.activeTab = b.dataset.tab;
       document.querySelectorAll(".tab-btn").forEach((x) => x.classList.remove("active"));
       b.classList.add("active");
-      el("readingContent").textContent = state.lastResult.reading[state.activeTab] || "";
+      showActiveTabContent();
     }));
-    el("resetBtn").addEventListener("click", () => { el("resultSection").classList.add("hidden"); el("inputSection").classList.remove("hidden"); });
+
+    el("resetBtn").addEventListener("click", () => { el("resultSection").classList.add("hidden"); el("inputSection").classList.remove("hidden"); window.scrollTo({ top: 0, behavior: "smooth" }); });
+
     el("copyBtn").addEventListener("click", async () => {
       if (!state.lastResult) return;
       const { meta, chart, reading } = state.lastResult; const p = chart.pillars;
-      await navigator.clipboard.writeText(`[별빛운세정원 AI 사주] ${meta.name}님\n원국: ${p.year.korean} · ${p.month.korean} · ${p.day.korean} · ${p.hour ? p.hour.korean : "미상"}\n${reading.personaTitle}\n\n${reading.executiveSummary}`);
-      el("copyBtn").textContent = "✅ 복사 완료!"; setTimeout(() => { el("copyBtn").textContent = "📋 요약 복사"; }, 2000);
+      const fullText = [
+        `[별빛운세정원 1만자 정밀 사주 리포트] ${meta.name}님 (${meta.solarOrLunar} ${meta.birthText})`,
+        `사주 원국: ${p.year.korean}(년) · ${p.month.korean}(월) · ${p.day.korean}(일) · ${p.hour ? p.hour.korean : "미상"}(시)`,
+        `명식: ${reading.personaTitle}`,
+        `\n[총평]\n${reading.executiveSummary}`,
+        `\n[맞춤 해답]\n${reading.questionAnswer}`,
+        `\n[원국·용신·지장간·합충]\n${reading.chartDeepAnalysis}`,
+        `\n[종합운]\n${reading.comprehensiveFortune}`,
+        `\n[재물·투자운]\n${reading.wealthAndInvestment}`,
+        `\n[커리어·이직운]\n${reading.careerAndJobChange}`,
+        `\n[연애·인연운]\n${reading.loveAndRelationships}`,
+        `\n[2027 신년운세 및 대운 흐름]\n${reading.newYear2027AndDaewoon}`,
+      ].join("\n");
+      await navigator.clipboard.writeText(fullText);
+      el("copyBtn").textContent = "✅ 전체 복사 완료!"; setTimeout(() => { el("copyBtn").textContent = "📋 전체 리포트 복사"; }, 2500);
     });
   </script>
 </body>
