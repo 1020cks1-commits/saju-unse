@@ -45,12 +45,34 @@
     .brand-title { font-size: 1.05rem; font-weight: 700; }
     .brand-title .serif-sub { font-weight: 400; font-size: 0.85rem; color: var(--text-secondary); margin-left: 4px; }
     .brand-desc { font-size: 0.76rem; color: var(--text-muted); }
-    .status-badge { display: inline-flex; align-items: center; gap: 7px; font-size: 0.78rem; color: var(--text-secondary); padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
-    .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: #34d399; box-shadow: 0 0 10px #34d399; }
+
+    /* 카카오 로그인 & 회원 바 */
+    .auth-area { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .kakao-login-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 16px; border-radius: 999px; border: none;
+      background: #FEE500; color: #191919; font-family: inherit;
+      font-size: 0.84rem; font-weight: 700; cursor: pointer; text-decoration: none;
+      box-shadow: 0 4px 14px rgba(254, 229, 0, 0.25); transition: transform 0.15s;
+    }
+    .kakao-login-btn:hover { transform: translateY(-1px); }
+    .user-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border-radius: 999px;
+      background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.16);
+      font-size: 0.82rem; color: #fff;
+    }
+    .credit-tag { color: #fde68a; font-weight: 700; }
+    .mini-nav-btn {
+      padding: 7px 12px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06);
+      color: #fff; font-family: inherit; font-size: 0.8rem; cursor: pointer;
+    }
+    .mini-nav-btn:hover { background: rgba(255,255,255,.15); }
+
     .input-panel { max-width: 720px; margin: 0 auto; padding: 36px; }
     .panel-header { text-align: center; margin-bottom: 30px; }
 
-    /* 캐릭터 사진 + 옆 방문자 카운터 */
     .portrait-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 0 auto 22px; flex-wrap: wrap; }
     .hero-portrait { width: 176px; height: 176px; padding: 4px; border-radius: 50%; background: linear-gradient(135deg, rgba(251,191,36,.65), rgba(168,85,247,.65)); box-shadow: 0 0 36px rgba(168,85,247,.42), 0 0 18px rgba(251,191,36,.22); flex-shrink: 0; }
     .hero-portrait img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: 50% 5%; display: block; }
@@ -94,20 +116,23 @@
     .sijin-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
     .sijin-chip { padding: 5px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04); color: var(--text-muted); font-size: 0.74rem; cursor: pointer; }
     .sijin-chip.active { background: rgba(255,255,255,.14); color: #fff; }
+
+    /* 5등분 균등 사각형 그리드 */
     .topic-chips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; }
- .topic-chip {
-   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-   padding: 12px 6px; border-radius: 10px;
-   border: 1px solid rgba(255,255,255,.14); background: rgba(15,23,42,.42);
-   color: var(--text-secondary); font-size: 0.82rem; font-weight: 600; cursor: pointer;
-   transition: all 0.2s ease; text-align: center; white-space: nowrap;
- }
- .topic-chip:hover { background: rgba(255,255,255,.1); color: #fff; }
- .topic-chip.active {
-   background: linear-gradient(145deg, rgba(255,255,255,.2), rgba(255,255,255,.08));
-   color: #fff; border-color: rgba(251, 191, 36, 0.55);
-   box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 6px 16px rgba(0,0,0,.25);
- }
+    .topic-chip {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      padding: 12px 6px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.14); background: rgba(15,23,42,.42);
+      color: var(--text-secondary); font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s ease; text-align: center; white-space: nowrap;
+    }
+    .topic-chip:hover { background: rgba(255,255,255,.1); color: #fff; }
+    .topic-chip.active {
+      background: linear-gradient(145deg, rgba(255,255,255,.2), rgba(255,255,255,.08));
+      color: #fff; border-color: rgba(251, 191, 36, 0.55);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 6px 16px rgba(0,0,0,.25);
+    }
+
     .mt-10 { margin-top: 10px; }
     .advanced-glass { border-radius: 18px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.03); padding: 12px 16px; }
     .advanced-glass summary { font-size: 0.84rem; color: var(--text-secondary); cursor: pointer; }
@@ -116,7 +141,6 @@
     .switch-row strong { font-size: 0.85rem; display: block; }
     .switch-row p { font-size: 0.76rem; color: var(--text-muted); }
 
-    /* 실행 버튼 2단 바 (무료 간단 + 1만자 정밀) */
     .action-stack { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; }
     .cta-lite-btn {
       padding: 15px 24px; border-radius: 18px;
@@ -124,18 +148,14 @@
       background: linear-gradient(135deg, rgba(251, 191, 36, 0.22), rgba(245, 158, 11, 0.14));
       color: #fef3c7; font-size: 0.98rem; font-weight: 700; cursor: pointer;
       box-shadow: inset 0 1px 0 rgba(255,255,255,.22);
-      transition: transform 0.2s, background 0.2s;
     }
-    .cta-lite-btn:hover { transform: translateY(-1px); background: linear-gradient(135deg, rgba(251, 191, 36, 0.32), rgba(245, 158, 11, 0.2)); }
     .cta-glass-btn {
       padding: 17px 24px; border-radius: 18px;
       border: 1px solid rgba(255,255,255,.32);
       background: linear-gradient(135deg, rgba(129,140,248,.48), rgba(168,85,247,.48));
       color: #fff; font-size: 1.02rem; font-weight: 700; cursor: pointer;
       box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 12px 28px rgba(79,70,229,.32);
-      transition: transform 0.2s;
     }
-    .cta-glass-btn:hover { transform: translateY(-2px); }
 
     .loading-panel { max-width: 540px; margin: 40px auto; padding: 56px 32px; text-align: center; }
     .celestial-loader { position: relative; width: 110px; height: 110px; margin: 0 auto 28px; display: grid; place-items: center; }
@@ -145,8 +165,13 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .hidden { display: none !important; }
 
-    /* 무료 간단 풀이 전용 창 */
+    /* 보관함 & 무료 간단 풀이 */
     .lite-wrapper { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    .history-item {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+      padding: 16px 20px; border-radius: 18px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+    }
     .lite-score-box { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
     .score-circle {
       width: 84px; height: 84px; border-radius: 50%; display: flex; flex-direction: column;
@@ -158,13 +183,8 @@
     .score-sub { font-size: 0.72rem; color: var(--text-secondary); }
     .lite-card { padding: 26px; }
     .lite-text { font-size: 0.98rem; line-height: 1.82; color: rgba(241,245,249,.92); white-space: pre-line; margin-top: 12px; }
-    .lite-upsell {
-      padding: 26px; text-align: center;
-      border: 1px solid rgba(168, 85, 247, 0.45);
-      background: linear-gradient(135deg, rgba(79,70,229,0.24), rgba(168,85,247,0.18));
-    }
+    .lite-upsell { padding: 26px; text-align: center; border: 1px solid rgba(168, 85, 247, 0.45); background: linear-gradient(135deg, rgba(79,70,229,0.24), rgba(168,85,247,0.18)); }
 
-    /* 1만자 정밀 벤토 그리드 */
     .result-bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
     .result-toolbar { grid-column: span 12; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -223,13 +243,13 @@
     .lucky-ritual { padding: 14px; border-radius: 16px; background: rgba(255,255,255,.06); font-size: 0.88rem; color: var(--text-secondary); line-height: 1.65; }
     .app-footer { margin-top: 40px; text-align: center; font-size: 0.78rem; color: var(--text-muted); }
     @media (max-width: 860px) { .bento-pillars, .bento-elements, .bento-reading, .bento-lucky { grid-column: span 12; } }
-  @media (max-width: 600px) {
-   .input-panel { padding: 24px 18px; }
-   .two-col { grid-template-columns: 1fr; }
-   .pillars-grid { gap: 8px; }
-   .topic-chips { grid-template-columns: repeat(2, 1fr); }
-   .topic-chip:last-child { grid-column: span 2; }
- }
+    @media (max-width: 600px) {
+      .input-panel { padding: 24px 18px; }
+      .two-col { grid-template-columns: 1fr; }
+      .pillars-grid { gap: 8px; }
+      .topic-chips { grid-template-columns: repeat(2, 1fr); }
+      .topic-chip:last-child { grid-column: span 2; }
+    }
   </style>
 </head>
 <body data-element="수">
@@ -238,11 +258,15 @@
       <div class="brand">
         <span class="brand-emblem">✨</span>
         <div>
-          <h1 class="brand-title">별빛운세정원 <span class="serif-sub">사주.운명</span></h1>
-          <p class="brand-desc">KASI 정밀 만세력 </p>
+          <h1 class="brand-title">별빛운세정원 <span class="serif-sub">星光庭園</span></h1>
+          <p class="brand-desc">KASI 정밀 만세력 × Gemini AI 명리 리포트</p>
         </div>
       </div>
-      <span class="status-badge"><span class="pulse-dot"></span> KASI 24절기 · 지장간 · 합충 정밀 분석</span>
+
+      <!-- 카카오 로그인 / 내 보관함 바 -->
+      <div id="authArea" class="auth-area">
+        <a href="/auth/kakao" class="kakao-login-btn">💬 카카오로 3초 시작</a>
+      </div>
     </header>
 
     <main>
@@ -251,16 +275,16 @@
         <div class="panel-header">
           <div class="portrait-row">
             <div class="hero-portrait">
-              <img src="/images/character.png" alt="☆별빛운세정원☆" onerror="this.parentElement.style.display='none'" />
+              <img src="/images/character.png" alt="별빛운세정원" onerror="this.parentElement.style.display='none'" />
             </div>
             <div class="visitor-badge">
               <span class="visitor-label"><span class="visitor-dot"></span> 실시간 누적 방문</span>
               <span class="visitor-count"><span id="visitCountText">78,000</span>명</span>
             </div>
           </div>
-          <span class="eyebrow">별빛운세정원 운명 이야기</span>
-          <h2 class="serif-heading">당신의 사주와 운명의,<br />비밀을 알려 드립니다</h2>
-          <p class="sub-copy">가벼운 오늘의 운세부터 1만자 정밀 명리 리포트까지 원하는 깊이로 확인하세요.</p>
+          <span class="eyebrow">DESTINY BLUEPRINT</span>
+          <h2 class="serif-heading">별빛이 속삭이는 당신의 사주,<br />운명의 지도를 펼쳐드립니다</h2>
+          <p class="sub-copy">카카오 로그인 시 사주 풀이 결과가 내 보관함에 자동 저장됩니다.</p>
         </div>
 
         <form id="sajuForm" class="saju-form">
@@ -324,11 +348,11 @@
           <div class="form-row">
             <label>가장 궁금한 영역 <span class="hint-inline">(1만자 정밀 풀이 전용)</span></label>
             <div class="topic-chips">
-              <button type="button" class="topic-chip active" data-topic="종합운">✨ 종합운</button>
-              <button type="button" class="topic-chip" data-topic="재물·투자운">💎 재물·투자</button>
-              <button type="button" class="topic-chip" data-topic="연애·인연운">🌙 연애·궁합</button>
-              <button type="button" class="topic-chip" data-topic="직업·커리어·이직">🧭 커리어·이직</button>
-              <button type="button" class="topic-chip" data-topic="2027 신년운세">🔥 2027 신년운세</button>
+              <button type="button" class="topic-chip active" data-topic="종합운">✨<span>종합운</span></button>
+              <button type="button" class="topic-chip" data-topic="재물·투자운">💎<span>재물·투자</span></button>
+              <button type="button" class="topic-chip" data-topic="연애·인연운">🌙<span>연애·인연</span></button>
+              <button type="button" class="topic-chip" data-topic="직업·커리어·이직">🧭<span>커리어·이직</span></button>
+              <button type="button" class="topic-chip" data-topic="2027 신년운세">🔥<span>2027 신년운세</span></button>
             </div>
             <input type="text" id="questionInput" class="mt-10" placeholder="구체적인 고민이 있다면 적어주세요 (예: 내년 이직과 부동산 투자 시기가 궁금해요)" maxlength="150" />
           </div>
@@ -363,12 +387,23 @@
             </div>
           </details>
 
-          <!-- 2단 실행 바: 위(무료 간단) / 아래(1만자 정밀) -->
           <div class="action-stack">
             <button type="button" id="liteBtn" class="cta-lite-btn">✨ 무료 간단 사주 & 오늘의 운세 보기 (3초) →</button>
-            <button type="submit" class="cta-glass-btn">🔮 1만자 정밀 사주 명식 운세 열기 →</button>
+            <button type="submit" class="cta-glass-btn">🔮 1만자 정밀 사주 명식 & AI 운세 열기 →</button>
           </div>
         </form>
+      </section>
+
+      <!-- 내 사주 보관함 섹션 -->
+      <section id="historySection" class="lite-wrapper hidden">
+        <div class="result-toolbar">
+          <button type="button" id="historyBackBtn" class="ghost-glass-btn">← 돌아가기</button>
+          <span class="tier-badge">📜 내 사주 보관함</span>
+        </div>
+        <article class="glass-card lite-card">
+          <div class="card-title-row"><h3>저장된 사주 풀이 목록</h3></div>
+          <div id="historyList" style="display:flex;flex-direction:column;gap:12px;"></div>
+        </article>
       </section>
 
       <!-- 로딩 섹션 -->
@@ -379,13 +414,12 @@
         <p id="loadingTimerText" style="margin-top:8px;font-size:.82rem;color:var(--text-muted);">경과 시간: 0초</p>
       </section>
 
-      <!-- 별도 창 1: 무료 간단 사주 & 오늘의 운세 창 -->
+      <!-- 무료 간단 풀이 창 -->
       <section id="liteResultSection" class="lite-wrapper hidden">
         <div class="result-toolbar">
           <button type="button" id="liteResetBtn" class="ghost-glass-btn">← 다시 입력하기</button>
           <span class="tier-badge">✨ 무료 간단 사주 & 오늘의 운세</span>
         </div>
-
         <article class="glass-card lite-card">
           <div class="lite-score-box">
             <div>
@@ -399,23 +433,19 @@
             </div>
           </div>
         </article>
-
         <article class="glass-card lite-card">
           <div class="card-title-row"><h3>☀️ 오늘의 운세</h3><span id="liteTodayDate" class="mini-info-badge"></span></div>
           <p id="liteTodayFortune" class="lite-text"></p>
         </article>
-
         <article class="glass-card lite-card">
           <div class="card-title-row"><h3>📜 내 사주 원국 & 간단 풀이 <span class="sub-hanja">四柱</span></h3></div>
           <div id="litePillarsGrid" class="pillars-grid" style="margin-bottom:18px;"></div>
           <p id="liteBriefSummary" class="lite-text"></p>
         </article>
-
         <article class="glass-card lite-card">
           <div class="card-title-row"><h3>🍀 오늘의 행운 포인트</h3></div>
           <div id="liteLuckyBox" class="lucky-grid"></div>
         </article>
-
         <article class="glass-card lite-upsell">
           <h3 class="serif-heading" style="font-size:1.25rem;margin-bottom:8px;">더 깊은 인생 설계와 2027년 신년운세가 궁금하신가요?</h3>
           <p style="font-size:.9rem;color:var(--text-secondary);margin-bottom:18px;">
@@ -425,7 +455,7 @@
         </article>
       </section>
 
-      <!-- 별도 창 2: 1만자 정밀 사주 벤토 창 -->
+      <!-- 1만자 정밀 사주 창 -->
       <section id="resultSection" class="result-bento hidden">
         <div class="result-toolbar">
           <button type="button" id="resetBtn" class="ghost-glass-btn">← 다시 입력하기</button>
@@ -476,20 +506,100 @@
     </main>
 
     <footer class="app-footer">
-      <p>별빛운세정원 AI 사주는 생성형 AI(Gemini)와 한국천문연구원(KASI) 기반 만세력을 결합한 자기성찰·엔터테인먼트 서비스입니다.</p>
+      <p>별빛운세정원 AI 사주는 생성형 AI(Gemini)와 한국천문연구원(KASI) 기반 만세력을 결합한 자기성찰·엔터테인먼트 서비스입니다. 입력하신 정보는 로그인 회원의 사주 보관함 제공을 위해서만 안전하게 사용됩니다.</p>
     </footer>
   </div>
 
   <script>
-    const state = { gender: "female", calendarType: "solar", focusTopic: "종합운", lastResult: null, activeTab: "questionAnswer" };
+    const state = { gender: "female", calendarType: "solar", focusTopic: "종합운", lastResult: null, activeTab: "questionAnswer", user: null };
     const el = (id) => document.getElementById(id);
+    const escapeHtml = (str) => String(str ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 
+    // 방문자 수 영구 카운팅
     fetch("/api/visit", { method: "POST" })
       .then((r) => r.json())
       .then((d) => { if (d.count) el("visitCountText").textContent = Number(d.count).toLocaleString("ko-KR"); })
       .catch(() => {});
 
-    const escapeHtml = (str) => String(str ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+    // 로그인 상태 확인
+    async function loadMe() {
+      try {
+        const r = await fetch("/api/me");
+        const d = await r.json();
+        state.user = d.user;
+        renderAuthArea();
+      } catch {}
+    }
+    loadMe();
+
+    function renderAuthArea() {
+      if (!state.user) {
+        el("authArea").innerHTML = `<a href="/auth/kakao" class="kakao-login-btn">💬 카카오로 3초 시작</a>`;
+        return;
+      }
+      el("authArea").innerHTML = `
+        <span class="user-chip">👤 ${escapeHtml(state.user.nickname)}님 · <span class="credit-tag">이용권 ${state.user.credits}회</span></span>
+        <button type="button" id="openHistoryBtn" class="mini-nav-btn">📜 보관함</button>
+        <button type="button" id="logoutBtn" class="mini-nav-btn">로그아웃</button>
+      `;
+      el("openHistoryBtn").addEventListener("click", openHistory);
+      el("logoutBtn").addEventListener("click", async () => {
+        await fetch("/auth/logout", { method: "POST" });
+        state.user = null;
+        renderAuthArea();
+        goHome();
+      });
+    }
+
+    async function openHistory() {
+      hideAllSections();
+      el("historySection").classList.remove("hidden");
+      el("historyList").innerHTML = `<p style="color:var(--text-muted);">불러오는 중...</p>`;
+      try {
+        const res = await fetch("/api/history");
+        const data = await res.json();
+        if (!data.items || data.items.length === 0) {
+          el("historyList").innerHTML = `<p style="color:var(--text-muted);">아직 저장된 사주 풀이가 없습니다.</p>`;
+          return;
+        }
+        el("historyList").innerHTML = data.items.map((item, idx) => `
+          <div class="history-item">
+            <div>
+              <strong style="font-size:0.98rem;">${escapeHtml(item.subject_name)}님</strong>
+              <span class="mini-info-badge" style="margin-left:6px;">${item.mode === "lite" ? "✨ 간단 운세" : "🔮 1만자 정밀"}</span>
+              <p style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">${escapeHtml(item.birth_summary)} · ${new Date(item.created_at).toLocaleDateString("ko-KR")}</p>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button type="button" class="mini-nav-btn view-hist-btn" data-idx="${idx}">다시 보기</button>
+              <button type="button" class="mini-nav-btn del-hist-btn" data-id="${item.id}" style="color:#fda4af;">삭제</button>
+            </div>
+          </div>
+        `).join("");
+
+        el("historyList").querySelectorAll(".view-hist-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const saved = data.items[Number(btn.dataset.idx)].result_json;
+            state.lastResult = saved;
+            hideAllSections();
+            if (saved.mode === "lite") { renderLiteResult(saved); el("liteResultSection").classList.remove("hidden"); }
+            else { renderFullResult(saved); el("resultSection").classList.remove("hidden"); }
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+        });
+        el("historyList").querySelectorAll(".del-hist-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            await fetch(`/api/history/${btn.dataset.id}`, { method: "DELETE" });
+            openHistory();
+          });
+        });
+      } catch {
+        el("historyList").innerHTML = `<p style="color:#fda4af;">보관함을 불러오지 못했습니다.</p>`;
+      }
+    }
+
+    function hideAllSections() {
+      ["inputSection", "historySection", "loadingSection", "liteResultSection", "resultSection"].forEach((id) => el(id).classList.add("hidden"));
+    }
 
     document.querySelectorAll(".seg-btn").forEach((b) => b.addEventListener("click", () => {
       document.querySelectorAll(".seg-btn").forEach((x) => x.classList.remove("active"));
@@ -545,9 +655,7 @@
     }
 
     async function requestSaju(mode) {
-      el("inputSection").classList.add("hidden");
-      el("liteResultSection").classList.add("hidden");
-      el("resultSection").classList.add("hidden");
+      hideAllSections();
       el("loadingSection").classList.remove("hidden");
       startLoading(mode);
       try {
@@ -556,13 +664,9 @@
         if (!res.ok) throw new Error(data.error || "요청 실패");
         state.lastResult = data;
         el("loadingSection").classList.add("hidden");
-        if (data.mode === "lite") {
-          renderLiteResult(data);
-          el("liteResultSection").classList.remove("hidden");
-        } else {
-          renderFullResult(data);
-          el("resultSection").classList.remove("hidden");
-        }
+        if (data.mode === "lite") { renderLiteResult(data); el("liteResultSection").classList.remove("hidden"); }
+        else { renderFullResult(data); el("resultSection").classList.remove("hidden"); }
+        loadMe();
         window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (err) {
         alert(err.message);
@@ -661,13 +765,13 @@
     }));
 
     function goHome() {
-      el("liteResultSection").classList.add("hidden");
-      el("resultSection").classList.add("hidden");
+      hideAllSections();
       el("inputSection").classList.remove("hidden");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
     el("liteResetBtn").addEventListener("click", goHome);
     el("resetBtn").addEventListener("click", goHome);
+    el("historyBackBtn").addEventListener("click", goHome);
 
     el("copyBtn").addEventListener("click", async () => {
       if (!state.lastResult) return;
