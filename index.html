@@ -25,7 +25,16 @@
     body[data-element="토"] { --aurora-1: rgba(245,158,11,.38); --aurora-2: rgba(217,119,6,.28); --aurora-3: rgba(124,58,237,.30); --accent: #fbbf24; }
     body[data-element="금"] { --aurora-1: rgba(148,163,184,.38); --aurora-2: rgba(56,189,248,.32); --aurora-3: rgba(99,102,241,.30); --accent: #cbd5e1; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: "Pretendard", sans-serif; background: var(--bg-obsidian); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; line-height: 1.6; }
+   body {
+      font-family: "Pretendard", sans-serif;
+      background:
+        linear-gradient(rgba(7, 8, 15, 0.45), rgba(7, 8, 15, 0.65)),
+        url("/images/bg.png") center / cover no-repeat fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
     .serif-heading, .serif-sub { font-family: "Noto Serif KR", serif; }
     .aurora-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
     .orb { position: absolute; border-radius: 50%; filter: blur(110px); transition: background 1.4s ease; animation: floatOrb 22s ease-in-out infinite alternate; }
