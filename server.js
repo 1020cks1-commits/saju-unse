@@ -1,4 +1,5 @@
 import "dotenv/config";
+import crypto from "crypto";
 import express from "express";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
@@ -16,16 +17,20 @@ app.set("trust proxy", 1);
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 app.use("/images", express.static(path.join(__dirname, "images")));
-app.get("/images/loading.mp4", (req, res) => {
-  res.sendFile(path.join(__dirname, "loading.mp4"));
-});
-app.get("/images/intro.mp4", (req, res) => {
-  res.sendFile(path.join(__dirname, "intro.mp4"));
-});
+
 const PORT = process.env.PORT || 3000;
 const MODEL_CANDIDATES = ["gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-4-hydrogen"];
 const JWT_SECRET = process.env.JWT_SECRET || "byeolbit_fallback_secret_2026";
 const REQUIRE_CREDITS = process.env.REQUIRE_CREDITS === "true";
+
+// 백그라운드 작업 저장소 (60초 타임아웃 방지용)
+const sajuJobs = new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, job] of sajuJobs.entries()) {
+    if (now - job.createdAt > 15 * 60 * 1000) sajuJobs.delete(id);
+  }
+}, 5 * 60 * 1000);
 
 const supabase =
   process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY
@@ -34,6 +39,14 @@ const supabase =
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
+});
+
+app.get("/images/loading.mp4", (req, res) => {
+  res.sendFile(path.join(__dirname, "loading.mp4"));
+});
+
+app.get("/images/intro.mp4", (req, res) => {
+  res.sendFile(path.join(__dirname, "intro.mp4"));
 });
 
 async function getAuthUser(req) {
@@ -60,9 +73,7 @@ function getBaseUrl(req) {
 }
 
 function setAuthCookie(req, res, user) {
-  const token = jwt.sign({ userId: user.id, nickname: user.nickname }, JWT_SECRET, {
-    expiresIn: "30d",
-  });
+  const token = jwt.sign({ userId: user.id, nickname: user.nickname }, JWT_SECRET, { expiresIn: "30d" });
   const rawProto = req.headers["x-forwarded-proto"] || req.protocol || "";
   const isHttps = req.secure || String(rawProto).includes("https");
   res.cookie("byeolbit_token", token, {
@@ -103,13 +114,8 @@ app.get("/auth/kakao/callback", async (req, res) => {
     if (error || !code) {
       return sendLoginErrorPage(res, "카카오 인증이 취소되었거나 거부되었습니다.", `${error}: ${error_description || ""}`);
     }
-
     if (!supabase) {
-      return sendLoginErrorPage(
-        res,
-        "Supabase DB 연결 실패 (SUPABASE_URL 또는 SUPABASE_SERVICE_KEY 확인 필요)",
-        `SUPABASE_URL=${Boolean(process.env.SUPABASE_URL)}, SUPABASE_SERVICE_KEY=${Boolean(process.env.SUPABASE_SERVICE_KEY)}`
-      );
+      return sendLoginErrorPage(res, "Supabase DB 연결 실패", "SUPABASE_URL / SUPABASE_SERVICE_KEY 확인 필요");
     }
 
     const clientId = process.env.KAKAO_CLIENT_ID;
@@ -131,7 +137,6 @@ app.get("/auth/kakao/callback", async (req, res) => {
     });
     const tokenData = await tokenRes.json();
     if (!tokenData.access_token) {
-      console.error("[카카오 토큰 오류]", tokenData);
       return sendLoginErrorPage(res, "카카오 토큰 발급 실패", JSON.stringify(tokenData, null, 2));
     }
 
@@ -152,8 +157,7 @@ app.get("/auth/kakao/callback", async (req, res) => {
       .maybeSingle();
 
     if (selectErr) {
-      console.error("[DB 조회 오류]", selectErr);
-      return sendLoginErrorPage(res, "Supabase users 테이블 조회 실패 (SQL 실행 여부를 확인하세요)", JSON.stringify(selectErr, null, 2));
+      return sendLoginErrorPage(res, "Supabase users 테이블 조회 실패", JSON.stringify(selectErr, null, 2));
     }
 
     if (!existingUser) {
@@ -163,7 +167,6 @@ app.get("/auth/kakao/callback", async (req, res) => {
         .select("id, kakao_id, nickname, credits")
         .single();
       if (insertErr) {
-        console.error("[DB 저장 오류]", insertErr);
         return sendLoginErrorPage(res, "Supabase users 테이블 저장 실패", JSON.stringify(insertErr, null, 2));
       }
       existingUser = created;
@@ -175,7 +178,6 @@ app.get("/auth/kakao/callback", async (req, res) => {
     setAuthCookie(req, res, existingUser);
     res.redirect("/");
   } catch (err) {
-    console.error("[카카오 콜백 오류]", err);
     return sendLoginErrorPage(res, "서버 내부 오류", err?.message || String(err));
   }
 });
@@ -325,7 +327,6 @@ const FULL_SAJU_SCHEMA = {
   required: ["personaTitle", "keywords", "executiveSummary", "chartDeepAnalysis", "comprehensiveFortune", "wealthAndInvestment", "careerAndJobChange", "loveAndRelationships", "newYear2027AndDaewoon", "questionAnswer", "luckyGuide"],
 };
 
-// 503/429 폭주 시 자동으로 다른 최신 모델로 우회 호출
 async function callGeminiSmart({ apiKey, systemInstruction, prompt, schema, maxTokens, useFlex }) {
   const ai = new GoogleGenAI({ apiKey });
   const baseConfig = {
@@ -343,7 +344,7 @@ async function callGeminiSmart({ apiKey, systemInstruction, prompt, schema, maxT
         const res = await ai.models.generateContent({
           model,
           contents: prompt,
-          config: { ...baseConfig, serviceTier: "flex", httpOptions: { timeout: 120000 } },
+          config: { ...baseConfig, serviceTier: "flex", httpOptions: { timeout: 90000 } },
         });
         return { text: res.text, model, usedTier: "flex" };
       } catch (err) {
@@ -356,7 +357,7 @@ async function callGeminiSmart({ apiKey, systemInstruction, prompt, schema, maxT
       const res = await ai.models.generateContent({
         model,
         contents: prompt,
-        config: { ...baseConfig, httpOptions: { timeout: 150000 } },
+        config: { ...baseConfig, httpOptions: { timeout: 120000 } },
       });
       return { text: res.text, model, usedTier: useFlex ? "standard-fallback" : "standard" };
     } catch (err) {
@@ -367,6 +368,7 @@ async function callGeminiSmart({ apiKey, systemInstruction, prompt, schema, maxT
   throw lastErr || new Error("모든 AI 모델이 일시적으로 혼잡합니다. 잠시 후 다시 시도해주세요.");
 }
 
+// 1단계: 사주 요청 접수 (즉시 jobId 발급)
 app.post("/api/saju", async (req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -396,14 +398,12 @@ app.post("/api/saju", async (req, res) => {
 
     const isLite = mode === "lite";
 
-    // 1만자 정밀 풀이는 카카오 로그인 필수!
     if (!isLite && !authUser) {
       return res.status(401).json({ error: "1만자 정밀 사주는 카카오 로그인 후 이용하실 수 있습니다." });
     }
     if (!isLite && REQUIRE_CREDITS && authUser.credits <= 0) {
       return res.status(402).json({ error: "보유한 정밀 풀이 이용권이 부족합니다." });
     }
-
     if (!year || !month || !day) {
       return res.status(400).json({ error: "생년월일을 정확히 입력해주세요." });
     }
@@ -487,47 +487,81 @@ app.post("/api/saju", async (req, res) => {
 
 위 모든 명리 데이터를 빠짐없이 분석하여 총 1만자 이상의 프리미엄 사주 풀이 JSON을 작성해주세요.`.trim();
 
-    const { text, model: usedModel, usedTier } = await callGeminiSmart({
-      apiKey,
-      systemInstruction,
-      prompt,
-      schema: isLite ? LITE_SAJU_SCHEMA : FULL_SAJU_SCHEMA,
-      maxTokens: isLite ? 2048 : 24576,
-      useFlex: Boolean(useFlex),
-    });
+    const jobId = crypto.randomUUID();
+    sajuJobs.set(jobId, { status: "processing", createdAt: Date.now() });
 
-    const reading = JSON.parse(String(text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
-    const totalChars = isLite
-      ? (reading.todayFortune?.length || 0) + (reading.briefSajuSummary?.length || 0)
-      : [reading.executiveSummary, reading.chartDeepAnalysis, reading.comprehensiveFortune, reading.wealthAndInvestment, reading.careerAndJobChange, reading.loveAndRelationships, reading.newYear2027AndDaewoon, reading.questionAnswer].filter(Boolean).join("").length;
+    // 백그라운드에서 AI 생성 실행 (프록시 60초 타임아웃 회피!)
+    (async () => {
+      try {
+        const { text, model: usedModel, usedTier } = await callGeminiSmart({
+          apiKey,
+          systemInstruction,
+          prompt,
+          schema: isLite ? LITE_SAJU_SCHEMA : FULL_SAJU_SCHEMA,
+          maxTokens: isLite ? 2048 : 24576,
+          useFlex: Boolean(useFlex),
+        });
 
-    const birthText = `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")} ${unknownTime ? "시간 미상" : `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`}`;
+        const reading = JSON.parse(String(text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
+        const totalChars = isLite
+          ? (reading.todayFortune?.length || 0) + (reading.briefSajuSummary?.length || 0)
+          : [reading.executiveSummary, reading.chartDeepAnalysis, reading.comprehensiveFortune, reading.wealthAndInvestment, reading.careerAndJobChange, reading.loveAndRelationships, reading.newYear2027AndDaewoon, reading.questionAnswer].filter(Boolean).join("").length;
 
-    const resultPayload = {
-      mode: isLite ? "lite" : "full",
-      meta: { name, gender, solarOrLunar: isLunar ? (isLeapMonth ? "음력(윤달)" : "음력") : "양력", birthText, todayText: koreaTodayText, approxKoreanAge, model: usedModel, usedTier, totalChars },
-      chart: { pillars, tenGods, voidBranches, elements, luckPillars: { forward: sajuRaw.luckPillars?.forward ?? true, startAge: sajuRaw.luckPillars?.startAge ?? 1, list: luckPillars } },
-      reading,
-    };
+        const birthText = `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")} ${unknownTime ? "시간 미상" : `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`}`;
 
-    if (authUser && supabase) {
-      await supabase.from("saju_history").insert({
-        user_id: authUser.id,
-        mode: resultPayload.mode,
-        subject_name: name,
-        birth_summary: `${resultPayload.meta.solarOrLunar} ${birthText}`,
-        result_json: resultPayload,
-      });
-      if (!isLite && REQUIRE_CREDITS) {
-        await supabase.from("users").update({ credits: authUser.credits - 1 }).eq("id", authUser.id);
+        const resultPayload = {
+          mode: isLite ? "lite" : "full",
+          meta: { name, gender, solarOrLunar: isLunar ? (isLeapMonth ? "음력(윤달)" : "음력") : "양력", birthText, todayText: koreaTodayText, approxKoreanAge, model: usedModel, usedTier, totalChars },
+          chart: { pillars, tenGods, voidBranches, elements, luckPillars: { forward: sajuRaw.luckPillars?.forward ?? true, startAge: sajuRaw.luckPillars?.startAge ?? 1, list: luckPillars } },
+          reading,
+        };
+
+        if (authUser && supabase) {
+          await supabase.from("saju_history").insert({
+            user_id: authUser.id,
+            mode: resultPayload.mode,
+            subject_name: name,
+            birth_summary: `${resultPayload.meta.solarOrLunar} ${birthText}`,
+            result_json: resultPayload,
+          });
+          if (!isLite && REQUIRE_CREDITS) {
+            await supabase.from("users").update({ credits: authUser.credits - 1 }).eq("id", authUser.id);
+          }
+        }
+
+        sajuJobs.set(jobId, { status: "done", result: resultPayload, createdAt: Date.now() });
+      } catch (bgErr) {
+        console.error("[백그라운드 사주 분석 오류]", bgErr);
+        sajuJobs.set(jobId, {
+          status: "error",
+          error: `AI 사주 분석 오류: ${bgErr?.message || "잠시 후 다시 시도해주세요."}`,
+          createdAt: Date.now(),
+        });
       }
-    }
+    })();
 
-    res.json(resultPayload);
+    res.json({ jobId });
   } catch (err) {
     console.error("[/api/saju 오류]", err);
     res.status(500).json({ error: `AI 사주 분석 오류: ${err?.message || "잠시 후 다시 시도해주세요."}` });
   }
+});
+
+// 2단계: 2초마다 완료 여부 확인
+app.get("/api/saju/status/:jobId", (req, res) => {
+  const job = sajuJobs.get(req.params.jobId);
+  if (!job) {
+    return res.status(404).json({ status: "error", error: "작업 시간이 초과되었거나 서버가 재시작되었습니다. 다시 시도해주세요." });
+  }
+  if (job.status === "done") {
+    sajuJobs.delete(req.params.jobId);
+    return res.json({ status: "done", data: job.result });
+  }
+  if (job.status === "error") {
+    sajuJobs.delete(req.params.jobId);
+    return res.json({ status: "error", error: job.error });
+  }
+  res.json({ status: "processing" });
 });
 
 app.listen(PORT, "0.0.0.0", () => {
