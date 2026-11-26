@@ -23,7 +23,6 @@ const MODEL_CANDIDATES = ["gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-4
 const JWT_SECRET = process.env.JWT_SECRET || "byeolbit_fallback_secret_2026";
 const REQUIRE_CREDITS = process.env.REQUIRE_CREDITS === "true";
 
-// 백그라운드 작업 저장소 (60초 타임아웃 방지용)
 const sajuJobs = new Map();
 setInterval(() => {
   const now = Date.now();
@@ -95,7 +94,6 @@ function sendLoginErrorPage(res, title, detail) {
   `);
 }
 
-// 1. 카카오 로그인
 app.get("/auth/kakao", (req, res) => {
   const clientId = process.env.KAKAO_CLIENT_ID;
   if (!clientId) {
@@ -192,7 +190,6 @@ app.post("/auth/logout", (req, res) => {
   res.json({ ok: true });
 });
 
-// 2. 영구 방문자 수
 let fallbackVisits = Number(process.env.START_VISITS || 78000);
 
 app.post("/api/visit", async (req, res) => {
@@ -210,7 +207,6 @@ app.post("/api/visit", async (req, res) => {
   res.json({ count: fallbackVisits });
 });
 
-// 3. 보관함 조회 / 삭제
 app.get("/api/history", async (req, res) => {
   const user = await getAuthUser(req);
   if (!user) return res.status(401).json({ error: "로그인이 필요합니다." });
@@ -231,7 +227,6 @@ app.delete("/api/history/:id", async (req, res) => {
   res.json({ ok: true });
 });
 
-// 4. 만세력 & AI 사주
 const STEM_INFO = {
   갑: { hanja: "甲", element: "목", yinYang: "양", title: "큰 소나무(갑목)" },
   을: { hanja: "乙", element: "목", yinYang: "음", title: "유연한 화초(을목)" },
@@ -298,19 +293,16 @@ const LITE_SAJU_SCHEMA = {
   required: ["personaTitle", "todayScore", "todayKeyword", "todayFortune", "briefSajuSummary", "luckyColor", "luckyNumber", "oneLineAdvice"],
 };
 
-const FULL_SAJU_SCHEMA = {
+// 1만자 고속 병렬 생성용 전반부 스키마 (약 5,500자)
+const FULL_PART1_SCHEMA = {
   type: Type.OBJECT,
   properties: {
     personaTitle: { type: Type.STRING },
     keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-    executiveSummary: { type: Type.STRING, description: "사주 전체의 큰 그림과 핵심 총평 (최소 700자 이상)" },
-    chartDeepAnalysis: { type: Type.STRING, description: "조후·억부, 신강/신약, 용신·희신·기신, 지장간·12운성·합충형파해, 공망 정밀 해설 (최소 1,600자 이상, [소제목] 구분)" },
-    comprehensiveFortune: { type: Type.STRING, description: "타고난 종합운, 초년·중년·말년 흐름, 잠재력과 리스크 요인 (최소 1,500자 이상, [소제목] 구분)" },
-    wealthAndInvestment: { type: Type.STRING, description: "재물 그릇, 근로/사업/투자 적합성, 주식·부동산·현금 전략, 손재 방지법 (최소 1,600자 이상, [소제목] 구분)" },
-    careerAndJobChange: { type: Type.STRING, description: "최적 직업군 Top 5, 조직 vs 사업 적합도, 이직·승진 타이밍, 처세술 (최소 1,600자 이상, [소제목] 구분)" },
-    loveAndRelationships: { type: Type.STRING, description: "연애 패턴, 일지(배우자궁)와 결혼운, 최고 궁합 vs 피할 유형, 귀인운 (최소 1,500자 이상, [소제목] 구분)" },
-    newYear2027AndDaewoon: { type: Type.STRING, description: "10년 대운, 2026 병오년 마무리, 2027 정미년 상반기·하반기 월별 흐름과 중장기 로드맵 (최소 1,800자 이상, [소제목] 구분)" },
-    questionAnswer: { type: Type.STRING, description: "선택한 분야와 직접 남긴 질문에 대한 명리학적 근거 기반 행동 지침 (최소 1,000자 이상, [소제목] 구분)" },
+    executiveSummary: { type: Type.STRING, description: "사주 전체 핵심 총평 (최소 800자 이상)" },
+    chartDeepAnalysis: { type: Type.STRING, description: "조후·억부, 신강/신약, 용신·희신·기신, 지장간·12운성·합충형파해, 공망 정밀 해설 (최소 1,700자 이상, [소제목] 구분)" },
+    comprehensiveFortune: { type: Type.STRING, description: "타고난 종합운, 초년·중년·말년 흐름, 잠재력과 리스크 요인 (최소 1,600자 이상, [소제목] 구분)" },
+    wealthAndInvestment: { type: Type.STRING, description: "재물 그릇, 근로/사업/투자 적합성, 주식·부동산·현금 전략, 손재 방지법 (최소 1,700자 이상, [소제목] 구분)" },
     luckyGuide: {
       type: Type.OBJECT,
       properties: {
@@ -324,51 +316,49 @@ const FULL_SAJU_SCHEMA = {
       required: ["colorName", "colorHex", "numbers", "direction", "luckyItem", "dailyRitual"],
     },
   },
-  required: ["personaTitle", "keywords", "executiveSummary", "chartDeepAnalysis", "comprehensiveFortune", "wealthAndInvestment", "careerAndJobChange", "loveAndRelationships", "newYear2027AndDaewoon", "questionAnswer", "luckyGuide"],
+  required: ["personaTitle", "keywords", "executiveSummary", "chartDeepAnalysis", "comprehensiveFortune", "wealthAndInvestment", "luckyGuide"],
 };
 
-async function callGeminiSmart({ apiKey, systemInstruction, prompt, schema, maxTokens, useFlex }) {
+// 1만자 고속 병렬 생성용 후반부 스키마 (약 5,500자)
+const FULL_PART2_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    careerAndJobChange: { type: Type.STRING, description: "최적 직업군 Top 5, 조직 vs 사업 적합도, 이직·승진 타이밍, 처세술 (최소 1,700자 이상, [소제목] 구분)" },
+    loveAndRelationships: { type: Type.STRING, description: "연애 패턴, 일지(배우자궁)와 결혼운, 최고 궁합 vs 피할 유형, 귀인운 (최소 1,600자 이상, [소제목] 구분)" },
+    newYear2027AndDaewoon: { type: Type.STRING, description: "10년 대운, 2026 병오년 마무리, 2027 정미년 상반기·하반기 월별 흐름과 중장기 로드맵 (최소 1,900자 이상, [소제목] 구분)" },
+    questionAnswer: { type: Type.STRING, description: "선택한 분야와 직접 남긴 질문에 대한 명리학적 근거 기반 행동 지침 (최소 1,200자 이상, [소제목] 구분)" },
+  },
+  required: ["careerAndJobChange", "loveAndRelationships", "newYear2027AndDaewoon", "questionAnswer"],
+};
+
+// 고속 Standard 호출 + 혼잡 시 즉시 다음 최신 모델로 전환 (최대 45초/시도)
+async function callGeminiFast({ apiKey, systemInstruction, prompt, schema, maxTokens }) {
   const ai = new GoogleGenAI({ apiKey });
-  const baseConfig = {
-    systemInstruction,
-    responseMimeType: "application/json",
-    responseSchema: schema,
-    temperature: 0.75,
-    maxOutputTokens: maxTokens,
-  };
-
   let lastErr = null;
-  for (const model of MODEL_CANDIDATES) {
-    if (useFlex) {
-      try {
-        const res = await ai.models.generateContent({
-          model,
-          contents: prompt,
-          config: { ...baseConfig, serviceTier: "flex", httpOptions: { timeout: 90000 } },
-        });
-        return { text: res.text, model, usedTier: "flex" };
-      } catch (err) {
-        lastErr = err;
-        console.warn(`[${model} Flex 실패]`, err?.status || "", err?.message || err);
-      }
-    }
 
+  for (const model of MODEL_CANDIDATES) {
     try {
       const res = await ai.models.generateContent({
         model,
         contents: prompt,
-        config: { ...baseConfig, httpOptions: { timeout: 120000 } },
+        config: {
+          systemInstruction,
+          responseMimeType: "application/json",
+          responseSchema: schema,
+          temperature: 0.75,
+          maxOutputTokens: maxTokens,
+          httpOptions: { timeout: 45000 },
+        },
       });
-      return { text: res.text, model, usedTier: useFlex ? "standard-fallback" : "standard" };
+      return { text: res.text, model, usedTier: "standard-fast" };
     } catch (err) {
       lastErr = err;
-      console.warn(`[${model} Standard 실패 -> 다음 모델 전환]`, err?.status || "", err?.message || err);
+      console.warn(`[${model} 실패 -> 다음 모델 전환]`, err?.status || "", err?.message || err);
     }
   }
   throw lastErr || new Error("모든 AI 모델이 일시적으로 혼잡합니다. 잠시 후 다시 시도해주세요.");
 }
 
-// 1단계: 사주 요청 접수 (즉시 jobId 발급)
 app.post("/api/saju", async (req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -393,7 +383,6 @@ app.post("/api/saju", async (req, res) => {
       dayBoundary = "midnight",
       focusTopic = "종합운",
       customQuestion = "",
-      useFlex = true,
     } = req.body;
 
     const isLite = mode === "lite";
@@ -447,15 +436,6 @@ app.post("/api/saju", async (req, res) => {
     const approxKoreanAge = currentYear - Number(year) + 1;
     const koreaTodayText = new Date().toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric", weekday: "long" });
 
-    const systemInstruction = isLite
-      ? `당신은 다정하고 명쾌한 사주 상담가 '별빛운세정원'입니다. 오늘은 ${koreaTodayText}입니다. 사주 원국과 오늘의 기운을 바탕으로 '오늘의 운세'와 '핵심 사주 요약'만 알차게 작성해주세요.`
-      : `당신은 한국 정통 자평명리학과 현대 심리·재무·커리어 컨설팅을 겸비한 최고 수준의 AI 명리학 대가 '별빛운세정원'입니다.
-[절대 작성 원칙]
-1. 분량 엄수: 전체 JSON 텍스트의 총합이 반드시 **공백 포함 한국어 10,000자(1만자) 이상**이 되도록 매우 상세하고 깊이 있게 집필하세요.
-2. 정통 근거 명시: 제공된 만세력 원국(천간·지지·십신·지장간·12운성·합충형파해·오행·공망·대운)을 직접 인용하며 논리적 근거를 설명하세요.
-3. 가독성 구조: 각 항목 안에서는 **[소제목]** 형태로 3~4개 단락을 나누고 줄바꿈(\\n\\n)을 충분히 넣어 작성하세요.
-4. 시점 정확성: 현재는 ${currentYear}년(${koreaTodayText})이며, 내년은 2027년 정미년(丁未年)입니다. 2027년 신년운세는 상반기·하반기 및 계절/월별 흐름까지 구체적으로 짚어주세요.`;
-
     const baseDataText = `
 [의뢰인 기본 정보]
 - 이름: ${name} / 성별: ${gender === "male" ? "남성" : "여성"} / 약 ${approxKoreanAge}세
@@ -472,9 +452,7 @@ app.post("/api/saju", async (req, res) => {
 [공망] ${voidBranches.join(", ") || "없음"}
 `.trim();
 
-    const prompt = isLite
-      ? `${baseDataText}\n\n위 사주 원국을 바탕으로 ${koreaTodayText} 기준의 '오늘의 운세'와 '간단한 핵심 사주 풀이' JSON을 작성해주세요.`
-      : `${baseDataText}
+    const fullDataText = `${baseDataText}
 [정밀 명리 보조 데이터]
 - 지장간: ${JSON.stringify(hiddenStems)}
 - 12운성: ${JSON.stringify(twelveStages)}
@@ -483,26 +461,57 @@ app.post("/api/saju", async (req, res) => {
 
 [의뢰인 중점 관심사]
 - 선택한 분야: ${focusTopic}
-- 직접 남긴 질문: ${customQuestion.trim() || `${focusTopic}을(를) 포함해 전반적인 인생 전략과 2027년 신년운세를 상세히 알고 싶습니다.`}
-
-위 모든 명리 데이터를 빠짐없이 분석하여 총 1만자 이상의 프리미엄 사주 풀이 JSON을 작성해주세요.`.trim();
+- 직접 남긴 질문: ${customQuestion.trim() || `${focusTopic}을(를) 포함해 전반적인 인생 전략과 2027년 신년운세를 상세히 알고 싶습니다.`}`.trim();
 
     const jobId = crypto.randomUUID();
     sajuJobs.set(jobId, { status: "processing", createdAt: Date.now() });
 
-    // 백그라운드에서 AI 생성 실행 (프록시 60초 타임아웃 회피!)
     (async () => {
       try {
-        const { text, model: usedModel, usedTier } = await callGeminiSmart({
-          apiKey,
-          systemInstruction,
-          prompt,
-          schema: isLite ? LITE_SAJU_SCHEMA : FULL_SAJU_SCHEMA,
-          maxTokens: isLite ? 2048 : 24576,
-          useFlex: Boolean(useFlex),
-        });
+        let reading, usedModel, usedTier;
 
-        const reading = JSON.parse(String(text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
+        if (isLite) {
+          const resLite = await callGeminiFast({
+            apiKey,
+            systemInstruction: `당신은 다정하고 명쾌한 사주 상담가 '별빛운세정원'입니다. 오늘은 ${koreaTodayText}입니다. 사주 원국과 오늘의 기운을 바탕으로 '오늘의 운세'와 '핵심 사주 요약'만 알차게 작성해주세요.`,
+            prompt: `${baseDataText}\n\n위 사주 원국을 바탕으로 ${koreaTodayText} 기준의 '오늘의 운세'와 '간단한 핵심 사주 풀이' JSON을 작성해주세요.`,
+            schema: LITE_SAJU_SCHEMA,
+            maxTokens: 2048,
+          });
+          reading = JSON.parse(String(resLite.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
+          usedModel = resLite.model;
+          usedTier = resLite.usedTier;
+        } else {
+          // 1만자 정밀 풀이를 2개 파트로 동시에 병렬 생성 (속도 2~3배 향상!)
+          const sysFull = `당신은 한국 정통 자평명리학 대가 '별빛운세정원'입니다.
+1. 각 항목마다 지정된 최소 글자수(총합 1만자 이상)를 반드시 채워 매우 상세하고 논리적으로 작성하세요.
+2. 천간·지지·십신·지장간·12운성·합충형파해·대운 근거를 직접 인용하고, [소제목]과 줄바꿈(\\n\\n)으로 읽기 편하게 구성하세요.
+3. 현재는 ${currentYear}년(${koreaTodayText})이며, 내년은 2027년 정미년입니다.`;
+
+          const [p1Res, p2Res] = await Promise.all([
+            callGeminiFast({
+              apiKey,
+              systemInstruction: sysFull,
+              prompt: `${fullDataText}\n\n위 데이터를 바탕으로 [총평, 원국/용신/지장간/합충 심층 분석, 종합운, 재물/투자운, 개운 처방] JSON(최소 5,500자 이상)을 아주 상세히 작성해주세요.`,
+              schema: FULL_PART1_SCHEMA,
+              maxTokens: 12288,
+            }),
+            callGeminiFast({
+              apiKey,
+              systemInstruction: sysFull,
+              prompt: `${fullDataText}\n\n위 데이터를 바탕으로 [커리어/이직운, 연애/인연/배우자궁, 2027년 정미년 월별 신년운세 & 10년 대운 로드맵, 맞춤 질문 해답] JSON(최소 5,500자 이상)을 아주 상세히 작성해주세요.`,
+              schema: FULL_PART2_SCHEMA,
+              maxTokens: 12288,
+            }),
+          ]);
+
+          const part1 = JSON.parse(String(p1Res.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
+          const part2 = JSON.parse(String(p2Res.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
+          reading = { ...part1, ...part2 };
+          usedModel = p1Res.model;
+          usedTier = "parallel-fast";
+        }
+
         const totalChars = isLite
           ? (reading.todayFortune?.length || 0) + (reading.briefSajuSummary?.length || 0)
           : [reading.executiveSummary, reading.chartDeepAnalysis, reading.comprehensiveFortune, reading.wealthAndInvestment, reading.careerAndJobChange, reading.loveAndRelationships, reading.newYear2027AndDaewoon, reading.questionAnswer].filter(Boolean).join("").length;
@@ -547,7 +556,6 @@ app.post("/api/saju", async (req, res) => {
   }
 });
 
-// 2단계: 2초마다 완료 여부 확인
 app.get("/api/saju/status/:jobId", (req, res) => {
   const job = sajuJobs.get(req.params.jobId);
   if (!job) {
