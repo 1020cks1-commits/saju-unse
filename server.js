@@ -334,29 +334,34 @@ const FULL_PART2_SCHEMA = {
 // 고속 Standard 호출 + 혼잡 시 즉시 다음 최신 모델로 전환 (최대 45초/시도)
 async function callGeminiFast({ apiKey, systemInstruction, prompt, schema, maxTokens }) {
   const ai = new GoogleGenAI({ apiKey });
-  let lastErr = null;
+  const errors = [];
 
   for (const model of MODEL_CANDIDATES) {
-    try {
-      const res = await ai.models.generateContent({
-        model,
-        contents: prompt,
-        config: {
-          systemInstruction,
-          responseMimeType: "application/json",
-          responseSchema: schema,
-          temperature: 0.75,
-          maxOutputTokens: maxTokens,
-          httpOptions: { timeout: 45000 },
-        },
-      });
-      return { text: res.text, model, usedTier: "standard-fast" };
-    } catch (err) {
-      lastErr = err;
-      console.warn(`[${model} 실패 -> 다음 모델 전환]`, err?.status || "", err?.message || err);
+    for (let retry = 0; retry < 2; retry++) {
+      try {
+        const res = await ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            systemInstruction,
+            responseMimeType: "application/json",
+            responseSchema: schema,
+            temperature: 0.75,
+            maxOutputTokens: maxTokens,
+            httpOptions: { timeout: 60000 },
+          },
+        });
+        return { text: res.text, model, usedTier: "standard-fast" };
+      } catch (err) {
+        const msg = err?.message || String(err);
+        console.warn(`[${model} 시도${retry + 1} 실패]`, msg);
+        errors.push(`${model}: ${err?.status || msg.slice(0, 80)}`);
+        if (msg.includes("404") || msg.includes("NOT_FOUND")) break;
+        await new Promise((r) => setTimeout(r, 3000));
+      }
     }
   }
-  throw lastErr || new Error("모든 AI 모델이 일시적으로 혼잡합니다. 잠시 후 다시 시도해주세요.");
+  throw new Error(errors.join(" | "));
 }
 
 app.post("/api/saju", async (req, res) => {
@@ -488,22 +493,21 @@ app.post("/api/saju", async (req, res) => {
 2. 천간·지지·십신·지장간·12운성·합충형파해·대운 근거를 직접 인용하고, [소제목]과 줄바꿈(\\n\\n)으로 읽기 편하게 구성하세요.
 3. 현재는 ${currentYear}년(${koreaTodayText})이며, 내년은 2027년 정미년입니다.`;
 
-          const [p1Res, p2Res] = await Promise.all([
-            callGeminiFast({
-              apiKey,
-              systemInstruction: sysFull,
-              prompt: `${fullDataText}\n\n위 데이터를 바탕으로 [총평, 원국/용신/지장간/합충 심층 분석, 종합운, 재물/투자운, 개운 처방] JSON(최소 5,500자 이상)을 아주 상세히 작성해주세요.`,
-              schema: FULL_PART1_SCHEMA,
-              maxTokens: 12288,
-            }),
-            callGeminiFast({
-              apiKey,
-              systemInstruction: sysFull,
-              prompt: `${fullDataText}\n\n위 데이터를 바탕으로 [커리어/이직운, 연애/인연/배우자궁, 2027년 정미년 월별 신년운세 & 10년 대운 로드맵, 맞춤 질문 해답] JSON(최소 5,500자 이상)을 아주 상세히 작성해주세요.`,
-              schema: FULL_PART2_SCHEMA,
-              maxTokens: 12288,
-            }),
-          ]);
+        const p1Res = await callGeminiFast({
+            apiKey,
+            systemInstruction: sysFull,
+            prompt: `${fullDataText}\n\n위 데이터를 바탕으로 [총평, 원국/용신/지장간/합충 심층 분석, 종합운, 재물/투자운, 개운 처방] JSON(최소 5,500자 이상)을 아주 상세히 작성해주세요.`,
+            schema: FULL_PART1_SCHEMA,
+            maxTokens: 12288,
+          });
+          await new Promise((r) => setTimeout(r, 800));
+          const p2Res = await callGeminiFast({
+            apiKey,
+            systemInstruction: sysFull,
+            prompt: `${fullDataText}\n\n위 데이터를 바탕으로 [커리어/이직운, 연애/인연/배우자궁, 2027년 정미년 월별 신년운세 & 10년 대운 로드맵, 맞춤 질문 해답] JSON(최소 5,500자 이상)을 아주 상세히 작성해주세요.`,
+            schema: FULL_PART2_SCHEMA,
+            maxTokens: 12288,
+          });
 
           const part1 = JSON.parse(String(p1Res.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
           const part2 = JSON.parse(String(p2Res.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
