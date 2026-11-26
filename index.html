@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>별빛운세정원 | 프리미엄 정밀 AI 사주</title>
+  <title>별빛운세정원 | 프리미엄 정밀 사주</title>
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -262,10 +262,49 @@
       .pillars-grid { gap: 8px; }
       .topic-chips { grid-template-columns: repeat(2, 1fr); }
       .topic-chip:last-child { grid-column: span 2; }
+    }.intro-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(7, 8, 15, 0.88); backdrop-filter: blur(22px);
+      opacity: 1; transition: opacity 0.9s ease;
+    }
+    .intro-overlay.fade-out { opacity: 0; pointer-events: none; }
+    .intro-frame {
+      position: relative; width: 92vw; max-width: 430px; max-height: 88vh;
+      aspect-ratio: 9 / 16; border-radius: 28px; overflow: hidden;
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+    }
+    .intro-frame video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .intro-caption {
+      position: absolute; left: 0; right: 0; bottom: 0; padding: 36px 20px 22px;
+      background: linear-gradient(to top, rgba(7,8,15,0.88), transparent);
+      text-align: center;
+    }
+    .intro-btns {
+      position: absolute; top: 14px; right: 14px; display: flex; gap: 8px; z-index: 2;
+    }
+    .intro-btn {
+      padding: 7px 13px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(10px);
+      color: #fff; font-size: 0.78rem; font-weight: 600; cursor: pointer;
     }
   </style>
 </head>
 <body data-element="수">
+  <div id="introOverlay" class="intro-overlay hidden">
+    <div class="intro-frame">
+      <div class="intro-btns">
+        <button type="button" id="introSoundBtn" class="intro-btn">🔇 소리 켜기</button>
+        <button type="button" id="introSkipBtn" class="intro-btn">건너뛰기 →</button>
+      </div>
+      <video id="introVideo" src="/images/intro.mp4" autoplay muted playsinline preload="auto"></video>
+      <div class="intro-caption">
+        <p class="serif-heading" style="font-size:1.15rem;color:#fef3c7;">별빛운세정원에 오신 것을 환영합니다</p>
+        <p style="font-size:0.8rem;color:rgba(255,255,255,0.75);margin-top:4px;">잠시 후 당신의 운명 입력창이 열립니다</p>
+      </div>
+    </div>
+  </div>
   <div class="app-shell">
     <header class="top-nav glass-pill">
       <div class="brand">
@@ -827,6 +866,34 @@
       await navigator.clipboard.writeText(fullText);
       el("copyBtn").textContent = "✅ 전체 복사 완료!"; setTimeout(() => { el("copyBtn").textContent = "📋 전체 리포트 복사"; }, 2500);
     });
+   (function initIntro() {
+      const overlay = el("introOverlay");
+      const video = el("introVideo");
+      const skipBtn = el("introSkipBtn");
+      const soundBtn = el("introSoundBtn");
+      if (!overlay || !video) return;
+
+      if (sessionStorage.getItem("byeolbit_intro_seen")) return;
+      overlay.classList.remove("hidden");
+
+      function closeIntro() {
+        sessionStorage.setItem("byeolbit_intro_seen", "1");
+        overlay.classList.add("fade-out");
+        setTimeout(() => {
+          overlay.classList.add("hidden");
+          video.pause();
+        }, 900);
+      }
+
+      video.addEventListener("ended", closeIntro);
+      video.addEventListener("error", closeIntro);
+      skipBtn.addEventListener("click", closeIntro);
+      soundBtn.addEventListener("click", () => {
+        video.muted = !video.muted;
+        soundBtn.textContent = video.muted ? "🔇 소리 켜기" : "🔊 소리 끄기";
+      });
+      video.play().catch(() => {});
+    })(); 
   </script>
 </body>
 </html>
