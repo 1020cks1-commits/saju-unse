@@ -16,7 +16,9 @@ app.set("trust proxy", 1);
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 app.use("/images", express.static(path.join(__dirname, "images")));
-
+app.get("/images/loading.mp4", (req, res) => {
+  res.sendFile(path.join(__dirname, "loading.mp4"));
+});
 const PORT = process.env.PORT || 3000;
 const MODEL_CANDIDATES = ["gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-4-hydrogen"];
 const JWT_SECRET = process.env.JWT_SECRET || "byeolbit_fallback_secret_2026";
