@@ -998,8 +998,8 @@
       await navigator.clipboard.writeText(`[별빛운세정원 리포트] ${meta.name}님\n${reading.personaTitle}\n\n${reading.executiveSummary}\n\n${reading.overviewDeep}\n\n${reading.wealthDeep}\n\n${reading.loveDeep}\n\n${reading.careerDeep}\n\n${reading.answerDeep}`);
       el("copyBtn").textContent = "✅ 복사 완료!"; setTimeout(() => { el("copyBtn").textContent = "📋 전체 복사"; }, 2500);
     });
-  </script>
-  function openCharge() {
+   
+ function openCharge() {
       if (!state.user) {
         if (confirm("💎 이용권 충전은 카카오 로그인 후 가능합니다.\n로그인 하시겠습니까?")) window.location.href = "/auth/kakao";
         return;
@@ -1022,5 +1022,6 @@
         await loadMe(); openCharge();
       } catch (e) { alert(e.message); }
     }));
+       </script>
 </body>
 </html>
