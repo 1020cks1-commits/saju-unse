@@ -47,9 +47,7 @@ async function getAuthUser(req) {
     const decoded = jwt.verify(token, JWT_SECRET);
     const { data, error } = await supabase.from("users").select("id, kakao_id, nickname, credits").eq("id", decoded.userId).single();
     return error || !data ? null : data;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 function getBaseUrl(req) {
@@ -89,9 +87,7 @@ app.get("/auth/kakao/callback", async (req, res) => {
     if (process.env.KAKAO_CLIENT_SECRET) bodyParams.append("client_secret", process.env.KAKAO_CLIENT_SECRET);
 
     const tokenData = await (await fetch("https://kauth.kakao.com/oauth/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=utf-8" },
-      body: bodyParams,
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded;charset=utf-8" }, body: bodyParams,
     })).json();
     if (!tokenData.access_token) return sendLoginErrorPage(res, "카카오 토큰 실패", JSON.stringify(tokenData));
 
@@ -151,7 +147,6 @@ app.delete("/api/history/:id", async (req, res) => {
   await supabase.from("saju_history").delete().eq("id", Number(req.params.id)).eq("user_id", user.id);
   res.json({ ok: true });
 });
-
 const STEM_INFO = {
   갑: { hanja: "甲", element: "목", yinYang: "양", title: "큰 소나무(갑목)" },
   을: { hanja: "乙", element: "목", yinYang: "음", title: "유연한 화초(을목)" },
@@ -166,24 +161,17 @@ const STEM_INFO = {
 };
 
 const BRANCH_INFO = {
-  자: { hanja: "子", element: "수", animal: "쥐" },
-  축: { hanja: "丑", element: "토", animal: "소" },
-  인: { hanja: "寅", element: "목", animal: "호랑이" },
-  묘: { hanja: "卯", element: "목", animal: "토끼" },
-  진: { hanja: "辰", element: "토", animal: "용" },
-  사: { hanja: "巳", element: "화", animal: "뱀" },
-  오: { hanja: "午", element: "화", animal: "말" },
-  미: { hanja: "未", element: "토", animal: "양" },
-  신: { hanja: "申", element: "금", animal: "원숭이" },
-  유: { hanja: "酉", element: "금", animal: "닭" },
-  술: { hanja: "戌", element: "토", animal: "개" },
-  해: { hanja: "亥", element: "수", animal: "돼지" },
+  자: { hanja: "子", element: "수", animal: "쥐" }, 축: { hanja: "丑", element: "토", animal: "소" },
+  인: { hanja: "寅", element: "목", animal: "호랑이" }, 묘: { hanja: "卯", element: "목", animal: "토끼" },
+  진: { hanja: "辰", element: "토", animal: "용" }, 사: { hanja: "巳", element: "화", animal: "뱀" },
+  오: { hanja: "午", element: "화", animal: "말" }, 미: { hanja: "未", element: "토", animal: "양" },
+  신: { hanja: "申", element: "금", animal: "원숭이" }, 유: { hanja: "酉", element: "금", animal: "닭" },
+  술: { hanja: "戌", element: "토", animal: "개" }, 해: { hanja: "亥", element: "수", animal: "돼지" },
 };
 
 function parsePillar(koreanPillar) {
   if (!koreanPillar || typeof koreanPillar !== "string" || koreanPillar.length < 2) return null;
-  const stem = koreanPillar[0];
-  const branch = koreanPillar[1];
+  const stem = koreanPillar[0], branch = koreanPillar[1];
   const sInfo = STEM_INFO[stem] || { hanja: "?", element: "토", yinYang: "양", title: stem };
   const bInfo = BRANCH_INFO[branch] || { hanja: "?", element: "토", animal: "" };
   return { korean: koreanPillar, hanja: `${sInfo.hanja}${bInfo.hanja}`, stem: { korean: stem, ...sInfo }, branch: { korean: branch, ...bInfo } };
@@ -212,107 +200,79 @@ function extractSpecialBadges(pillars, includeHour) {
 
   const gwiinMap = { 갑: ["축", "미"], 무: ["축", "미"], 경: ["축", "미"], 을: ["자", "신"], 기: ["자", "신"], 병: ["해", "유"], 정: ["해", "유"], 신: ["인", "오"], 임: ["사", "묘"], 계: ["사", "묘"] };
   if ((gwiinMap[dayStem] || []).some((b) => branches.includes(b))) badges.push({ type: "good", text: "✨ 천을귀인" });
-
-  const stemHap = [["갑", "기"], ["을", "경"], ["병", "신"], ["정", "임"], ["무", "계"]];
-  for (const [a, b] of stemHap) if (stems.includes(a) && stems.includes(b)) badges.push({ type: "hap", text: `💫 ${a}${b} 천간합` });
-
-  const branchHap = [["자", "축"], ["인", "해"], ["묘", "술"], ["진", "유"], ["사", "신"], ["오", "미"]];
-  for (const [a, b] of branchHap) if (branches.includes(a) && branches.includes(b)) badges.push({ type: "hap", text: `💛 ${a}${b} 육합` });
-
-  const branchChung = [["자", "오"], ["축", "미"], ["인", "신"], ["묘", "유"], ["진", "술"], ["사", "해"]];
-  for (const [a, b] of branchChung) if (branches.includes(a) && branches.includes(b)) badges.push({ type: "chung", text: `⚡ ${a}${b}충` });
-
+  for (const [a, b] of [["갑", "기"], ["을", "경"], ["병", "신"], ["정", "임"], ["무", "계"]]) if (stems.includes(a) && stems.includes(b)) badges.push({ type: "hap", text: `💫 ${a}${b} 천간합` });
+  for (const [a, b] of [["자", "축"], ["인", "해"], ["묘", "술"], ["진", "유"], ["사", "신"], ["오", "미"]]) if (branches.includes(a) && branches.includes(b)) badges.push({ type: "hap", text: `💛 ${a}${b} 육합` });
+  for (const [a, b] of [["자", "오"], ["축", "미"], ["인", "신"], ["묘", "유"], ["진", "술"], ["사", "해"]]) if (branches.includes(a) && branches.includes(b)) badges.push({ type: "chung", text: `⚡ ${a}${b}충` });
   if (branches.some((b) => ["자", "오", "묘", "유"].includes(b))) badges.push({ type: "sinsal", text: "🌸 도화 기운" });
   if (branches.some((b) => ["인", "신", "사", "해"].includes(b))) badges.push({ type: "sinsal", text: "🐎 역마 기운" });
-  if (branches.some((b) => ["진", "술", "축", "미"].includes(b))) badges.push({ type: "sinsal", text: "🎨 화개(예술) 기운" });
-
+  if (branches.some((b) => ["진", "술", "축", "미"].includes(b))) badges.push({ type: "sinsal", text: "🎨 화개 기운" });
   return badges.slice(0, 6);
 }
 
 const LITE_SAJU_SCHEMA = {
   type: Type.OBJECT,
   properties: {
-    personaTitle: { type: Type.STRING },
-    todayScore: { type: Type.INTEGER },
-    todayKeyword: { type: Type.STRING },
-    todayFortune: { type: Type.STRING },
-    briefSajuSummary: { type: Type.STRING },
-    luckyColor: { type: Type.STRING },
-    luckyNumber: { type: Type.STRING },
-    oneLineAdvice: { type: Type.STRING },
+    personaTitle: { type: Type.STRING }, todayScore: { type: Type.INTEGER }, todayKeyword: { type: Type.STRING },
+    todayFortune: { type: Type.STRING }, briefSajuSummary: { type: Type.STRING },
+    luckyColor: { type: Type.STRING }, luckyNumber: { type: Type.STRING }, oneLineAdvice: { type: Type.STRING },
   },
   required: ["personaTitle", "todayScore", "todayKeyword", "todayFortune", "briefSajuSummary", "luckyColor", "luckyNumber", "oneLineAdvice"],
 };
 
-const FULL_PART1_SCHEMA = {
+// 4가지 상품 공통 1만자+ 스키마 (전반부 5,500자+)
+const PROD_PART1_SCHEMA = {
   type: Type.OBJECT,
   properties: {
     personaTitle: { type: Type.STRING },
+    scoreBadge: { type: Type.INTEGER, description: "해당 운세 또는 궁합 핵심 지수 (65~99)" },
     keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-    executiveSummary: { type: Type.STRING, description: "사주 전체 핵심 총평 (최소 800자 이상)" },
-    chartDeepAnalysis: { type: Type.STRING, description: "조후·억부, 신강/신약, 용신·희신·기신, 지장간·12운성·합충형파해, 공망 정밀 해설 (최소 1,700자 이상, [소제목] 구분)" },
-    comprehensiveFortune: { type: Type.STRING, description: "타고난 종합운, 초년·중년·말년 흐름, 잠재력과 리스크 요인 (최소 1,600자 이상, [소제목] 구분)" },
-    wealthAndInvestment: { type: Type.STRING, description: "재물 그릇, 근로/사업/투자 적합성, 주식·부동산·현금 전략, 손재 방지법 (최소 1,700자 이상, [소제목] 구분)" },
+    executiveSummary: { type: Type.STRING, description: "핵심 총평 (최소 1,000자 이상, 줄바꿈 포함)" },
+    overviewDeep: { type: Type.STRING, description: "해당 상품(종합사주/대운/궁합/2027신년운세)의 명리학적 정밀 본론 분석 (최소 2,400자 이상, [소제목] 구분)" },
+    wealthDeep: { type: Type.STRING, description: "이 상품 관점에서의 재물·주식·부동산·투자·돈의 흐름 정밀 분석 (최소 2,200자 이상, [소제목] 구분)" },
     luckyGuide: {
       type: Type.OBJECT,
       properties: { colorName: { type: Type.STRING }, colorHex: { type: Type.STRING }, numbers: { type: Type.STRING }, direction: { type: Type.STRING }, luckyItem: { type: Type.STRING }, dailyRitual: { type: Type.STRING } },
       required: ["colorName", "colorHex", "numbers", "direction", "luckyItem", "dailyRitual"],
     },
   },
-  required: ["personaTitle", "keywords", "executiveSummary", "chartDeepAnalysis", "comprehensiveFortune", "wealthAndInvestment", "luckyGuide"],
+  required: ["personaTitle", "scoreBadge", "keywords", "executiveSummary", "overviewDeep", "wealthDeep", "luckyGuide"],
 };
 
-const FULL_PART2_SCHEMA = {
+// 4가지 상품 공통 1만자+ 스키마 (후반부 5,500자+)
+const PROD_PART2_SCHEMA = {
   type: Type.OBJECT,
   properties: {
-    careerAndJobChange: { type: Type.STRING, description: "최적 직업군 Top 5, 조직 vs 사업 적합도, 이직·승진 타이밍, 처세술 (최소 1,700자 이상, [소제목] 구분)" },
-    loveAndRelationships: { type: Type.STRING, description: "연애 패턴, 일지(배우자궁)와 결혼운, 최고 궁합 vs 피할 유형, 귀인운 (최소 1,600자 이상, [소제목] 구분)" },
-    newYear2027AndDaewoon: { type: Type.STRING, description: "10년 대운, 2026 병오년 마무리, 2027 정미년 상반기·하반기 월별 흐름과 중장기 로드맵 (최소 1,800자 이상, [소제목] 구분)" },
-    questionAnswer: { type: Type.STRING, description: "선택한 분야와 직접 남긴 질문에 대한 명리학적 근거 기반 행동 지침 (최소 1,100자 이상, [소제목] 구분)" },
+    loveDeep: { type: Type.STRING, description: "이 상품 관점에서의 연애·결혼·배우자궁·인연·대인관계 정밀 분석 (최소 2,200자 이상, [소제목] 구분)" },
+    careerDeep: { type: Type.STRING, description: "이 상품 관점에서의 직업·커리어·이직·승진·사업·성공 전략 정밀 분석 (최소 2,200자 이상, [소제목] 구분)" },
+    answerDeep: { type: Type.STRING, description: "의뢰인의 질문과 해당 상품의 최종 행동 로드맵 및 시기별 주의점 (최소 1,400자 이상, [소제목] 구분)" },
     monthly2027: {
       type: Type.ARRAY,
-      description: "2027년 정미년 1월부터 12월까지 12개월 운세 요약 카드 12개",
+      description: "2027년 정미년 1~12월 월별 요약 카드 12개",
       items: {
         type: Type.OBJECT,
-        properties: { month: { type: Type.INTEGER }, grade: { type: Type.STRING, description: "대길, 길, 평온, 주의 중 하나" }, keyword: { type: Type.STRING }, tip: { type: Type.STRING } },
+        properties: { month: { type: Type.INTEGER }, grade: { type: Type.STRING }, keyword: { type: Type.STRING }, tip: { type: Type.STRING } },
         required: ["month", "grade", "keyword", "tip"],
       },
     },
   },
-  required: ["careerAndJobChange", "loveAndRelationships", "newYear2027AndDaewoon", "questionAnswer", "monthly2027"],
-};
-
-const COMPAT_SCHEMA = {
-  type: Type.OBJECT,
-  properties: {
-    compatTitle: { type: Type.STRING },
-    score: { type: Type.INTEGER },
-    keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-    summary: { type: Type.STRING, description: "두 사람의 전체 궁합 총평 (600자 이상)" },
-    elementSynergy: { type: Type.STRING, description: "서로 부족한 오행을 채워주는 상생·보완 관계 분석 (1,200자 이상, [소제목] 구분)" },
-    deepBondAndChemistry: { type: Type.STRING, description: "일간·일지 합충으로 본 겉궁합/속궁합/가치관/현실 호흡 (1,300자 이상, [소제목] 구분)" },
-    conflictAndAdvice: { type: Type.STRING, description: "갈등 패턴과 오래 행복하게 이어가는 비결 + 2027년 흐름 (1,300자 이상, [소제목] 구분)" },
-  },
-  required: ["compatTitle", "score", "keywords", "summary", "elementSynergy", "deepBondAndChemistry", "conflictAndAdvice"],
+  required: ["loveDeep", "careerDeep", "answerDeep", "monthly2027"],
 };
 
 async function callGeminiFast({ apiKey, systemInstruction, prompt, schema, maxTokens }) {
   const ai = new GoogleGenAI({ apiKey });
   const errors = [];
-
   for (const model of MODEL_CANDIDATES) {
     for (let retry = 0; retry < 2; retry++) {
       try {
         const config = { systemInstruction, temperature: 0.75, maxOutputTokens: maxTokens, httpOptions: { timeout: 60000 } };
         if (schema) { config.responseMimeType = "application/json"; config.responseSchema = schema; }
         const res = await ai.models.generateContent({ model, contents: prompt, config });
-        return { text: res.text, model, usedTier: "standard-fast" };
+        return { text: res.text, model };
       } catch (err) {
         const msg = err?.message || String(err);
-        console.warn(`[${model} 시도${retry + 1} 실패]`, msg);
-        errors.push(`${model}: ${err?.status || msg.slice(0, 70)}`);
+        errors.push(`${model}: ${err?.status || msg.slice(0, 60)}`);
         if (msg.includes("404") || msg.includes("NOT_FOUND")) break;
-        await new Promise((r) => setTimeout(r, 3000));
+        await new Promise((r) => setTimeout(r, 2500));
       }
     }
   }
@@ -321,42 +281,28 @@ async function callGeminiFast({ apiKey, systemInstruction, prompt, schema, maxTo
 
 function buildChartObject(input) {
   const sajuRaw = calculateFourPillars({
-    year: Number(input.year),
-    month: Number(input.month),
-    day: Number(input.day),
-    hour: input.unknownTime ? 12 : Number(input.hour ?? 12),
-    minute: input.unknownTime ? 0 : Number(input.minute ?? 0),
-    isLunar: Boolean(input.isLunar),
-    isLeapMonth: Boolean(input.isLunar && input.isLeapMonth),
-    gender: input.gender === "male" ? "male" : "female",
-    dayBoundary: input.dayBoundary || "midnight",
-    ...(input.useTrueSolarTime !== false && !input.unknownTime
-      ? { trueSolarTime: { longitude: 127.5, applyEquationOfTime: true, applyHistoricalDst: true } }
-      : {}),
+    year: Number(input.year), month: Number(input.month), day: Number(input.day),
+    hour: input.unknownTime ? 12 : Number(input.hour ?? 12), minute: input.unknownTime ? 0 : Number(input.minute ?? 0),
+    isLunar: Boolean(input.isLunar), isLeapMonth: Boolean(input.isLunar && input.isLeapMonth),
+    gender: input.gender === "male" ? "male" : "female", dayBoundary: input.dayBoundary || "midnight",
+    ...(input.useTrueSolarTime !== false && !input.unknownTime ? { trueSolarTime: { longitude: 127.5, applyEquationOfTime: true, applyHistoricalDst: true } } : {}),
   });
-
   const obj = sajuRaw.toObject();
   const pillars = { year: parsePillar(obj.year), month: parsePillar(obj.month), day: parsePillar(obj.day), hour: input.unknownTime ? null : parsePillar(obj.hour) };
   const elements = calculateElements(pillars, !input.unknownTime);
   const specialBadges = extractSpecialBadges(pillars, !input.unknownTime);
   const luckPillars = (sajuRaw.luckPillars?.pillars || []).slice(0, 8).map((lp) => ({
-    age: lp.age,
-    korean: lp.korean || lp.pillar,
-    hanja: parsePillar(lp.korean || lp.pillar)?.hanja || "",
+    age: lp.age, korean: lp.korean || lp.pillar, hanja: parsePillar(lp.korean || lp.pillar)?.hanja || "",
   }));
-
-  return {
-    sajuRaw,
-    chart: {
-      pillars,
-      tenGods: sajuRaw.tenGods || {},
-      voidBranches: sajuRaw.voidBranches || [],
-      specialBadges,
-      elements,
-      luckPillars: { forward: sajuRaw.luckPillars?.forward ?? true, startAge: sajuRaw.luckPillars?.startAge ?? 1, list: luckPillars },
-    },
-  };
+  return { sajuRaw, chart: { pillars, tenGods: sajuRaw.tenGods || {}, voidBranches: sajuRaw.voidBranches || [], specialBadges, elements, luckPillars: { forward: sajuRaw.luckPillars?.forward ?? true, startAge: sajuRaw.luckPillars?.startAge ?? 1, list: luckPillars } } };
 }
+
+const PRODUCT_GUIDES = {
+  saju: "【상품 1: 정통 종합 사주】 타고난 사주 원국·격국·용신·희신·지장간·12운성·합충형파해를 근간으로 평생의 종합 기질, 재물·투자 DNA, 연애·배우자궁, 커리어·이직 적성까지 총 1만자 이상 깊이 있게 해부하세요.",
+  daewoon: "【상품 2: 10년 대운 정밀 풀이】 인생을 10년 단위로 나누어 초년·현재 대운·다음 대운의 전환점을 집중 분석하고, 현재 대운과 다가올 대운 속에서 재물·투자, 연애·결혼, 커리어·이직의 승부 타이밍을 총 1만자 이상 작성하세요.",
+  compat: "【상품 3: 2인 정밀 궁합】 두 사람의 일간·일지·오행 상생상극·겉궁합/속궁합을 비교하여, 두 사람이 함께할 때의 종합 인연, 재물·투자 합(돈 복), 연애·갈등 해결, 커리어·일적 시너지까지 총 1만자 이상 작성하세요.",
+  newyear: "【상품 4: 2027년 정미년 신년운세】 다가올 2027년 정미년(丁未年)의 세운과 본인 사주의 합충을 중심으로 2027년 한 해 총운, 재물·투자, 연애·인연, 커리어·이직 전략과 1~12월 월별 흐름을 총 1만자 이상 상세히 작성하세요.",
+};
 
 app.post("/api/saju", async (req, res) => {
   try {
@@ -366,98 +312,101 @@ app.post("/api/saju", async (req, res) => {
     const authUser = await getAuthUser(req);
     const body = req.body;
     const isLite = body.mode === "lite";
+    const productType = isLite ? "lite" : (["saju", "daewoon", "compat", "newyear"].includes(body.productType) ? body.productType : "saju");
 
-    if (!isLite && !authUser) return res.status(401).json({ error: "1만자 정밀 사주는 카카오 로그인 후 이용하실 수 있습니다." });
-    if (!isLite && REQUIRE_CREDITS && authUser.credits <= 0) return res.status(402).json({ error: "보유한 이용권이 부족합니다." });
+    if (!isLite && !authUser) return res.status(401).json({ error: "이 프리미엄 풀이는 카카오 로그인 후 이용하실 수 있습니다." });
+    if (!isLite && REQUIRE_CREDITS && authUser.credits <= 0) return res.status(402).json({ error: "보유한 이용권(990원)이 부족합니다." });
     if (!body.year || !body.month || !body.day) return res.status(400).json({ error: "생년월일을 입력해주세요." });
+    if (productType === "compat" && !body.partner?.year) return res.status(400).json({ error: "상대방 생년월일을 입력해주세요." });
 
-    let built;
-    try { built = buildChartObject(body); } catch (e) { return res.status(400).json({ error: `날짜 오류: 음력/윤달 여부를 확인해주세요. (${e.message})` }); }
+    let builtA, builtB = null;
+    try {
+      builtA = buildChartObject(body);
+      if (productType === "compat") builtB = buildChartObject(body.partner);
+    } catch (e) { return res.status(400).json({ error: `날짜 오류: 음력/윤달 여부를 확인해주세요. (${e.message})` }); }
 
-    const { sajuRaw, chart } = built;
-    const { pillars, tenGods, voidBranches, elements, specialBadges, luckPillars } = chart;
-    const name = body.name || "귀하";
-    const gender = body.gender || "female";
+    const { sajuRaw, chart } = builtA;
     const currentYear = new Date().getFullYear();
     const approxKoreanAge = currentYear - Number(body.year) + 1;
     const koreaTodayText = new Date().toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric", weekday: "long" });
 
-    const baseDataText = `
-[의뢰인] ${name} / ${gender === "male" ? "남성" : "여성"} / 약 ${approxKoreanAge}세 / ${body.isLunar ? (body.isLeapMonth ? "음력(윤달)" : "음력(평달)") : "양력"} ${body.year}.${body.month}.${body.day} ${body.unknownTime ? "(시간미상)" : `${body.hour}:${body.minute}`}
-[오늘 날짜] ${koreaTodayText}
-[사주 원국]
-- 연주: ${pillars.year.korean}(${pillars.year.hanja}) 십신(${tenGods.year?.stem || "-"}/${tenGods.year?.branch || "-"})
-- 월주: ${pillars.month.korean}(${pillars.month.hanja}) 십신(${tenGods.month?.stem || "-"}/${tenGods.month?.branch || "-"})
-- 일주: ${pillars.day.korean}(${pillars.day.hanja}) 일간=${pillars.day.stem.title} 지지십신(${tenGods.day?.branch || "-"})
-- 시주: ${pillars.hour ? `${pillars.hour.korean}(${pillars.hour.hanja}) 십신(${tenGods.hour?.stem || "-"}/${tenGods.hour?.branch || "-"})` : "미상"}
-[오행] 목:${elements.counts["목"]} 화:${elements.counts["화"]} 토:${elements.counts["토"]} 금:${elements.counts["금"]} 수:${elements.counts["수"]} (주도:${elements.dominant}, 부족:${elements.lacking.join(",") || elements.weakest})
-[특수기운·공망] ${specialBadges.map((b) => b.text).join(", ")} | 공망: ${voidBranches.join(",") || "없음"}`.trim();
+    const formatPerson = (label, input, b) => {
+      const p = b.chart.pillars, tg = b.chart.tenGods, el = b.chart.elements;
+      return `[${label}: ${input.name || "귀하"} / ${input.gender === "male" ? "남" : "여"} / ${input.isLunar ? "음력" : "양력"} ${input.year}.${input.month}.${input.day} ${input.unknownTime ? "시간미상" : `${input.hour}:${input.minute}`}]
+- 원국: ${p.year.korean}(${p.year.hanja}) ${p.month.korean}(${p.month.hanja}) ${p.day.korean}(${p.day.hanja}) ${p.hour ? p.hour.korean + "(" + p.hour.hanja + ")" : "시주미상"}
+- 일간: ${p.day.stem.title} / 십신: 년(${tg.year?.stem}/${tg.year?.branch}) 월(${tg.month?.stem}/${tg.month?.branch}) 일지(${tg.day?.branch}) 시(${tg.hour?.stem || "-"}/${tg.hour?.branch || "-"})
+- 오행: 목${el.counts["목"]} 화${el.counts["화"]} 토${el.counts["토"]} 금${el.counts["금"]} 수${el.counts["수"]} (강:${el.dominant}, 약:${el.lacking.join(",") || el.weakest})
+- 특수/공망: ${b.chart.specialBadges.map((x) => x.text).join(",")} | 공망:${b.chart.voidBranches.join(",")}
+- 지장간:${JSON.stringify(b.sajuRaw.hiddenStems)} | 12운성:${JSON.stringify(b.sajuRaw.twelveStages)} | 합충:${JSON.stringify(b.sajuRaw.relations)}
+- 대운(${b.chart.luckPillars.forward ? "순행" : "역행"}, 대운수${b.chart.luckPillars.startAge}): ${b.chart.luckPillars.list.map((l) => `${l.age}세(${l.korean})`).join("→")}`;
+    };
 
-    const fullDataText = `${baseDataText}
-[지장간] ${JSON.stringify(sajuRaw.hiddenStems || null)}
-[12운성] ${JSON.stringify(sajuRaw.twelveStages || null)}
-[합충형파해] ${JSON.stringify(sajuRaw.relations || null)}
-[대운(${luckPillars.forward ? "순행" : "역행"}, 대운수 ${luckPillars.startAge})] ${luckPillars.list.map((l) => `${l.age}세(${l.korean}/${l.hanja})`).join(" → ")}
-[관심분야] ${body.focusTopic || "종합운"} / 질문: ${(body.customQuestion || "").trim() || "전반적인 인생 전략과 2027년 신년운세가 궁금합니다."}`.trim();
+    const fullDataText = `${formatPerson("본인", body, builtA)}
+${builtB ? `\n[관계: ${body.relationType || "연인·결혼"}]\n${formatPerson("상대방", body.partner, builtB)}` : ""}
+[오늘 날짜] ${koreaTodayText} (본인 한국나이 약 ${approxKoreanAge}세)
+[질문] ${(body.customQuestion || "").trim() || "전체 영역을 상세히 알고 싶습니다."}`;
 
     const jobId = crypto.randomUUID();
     sajuJobs.set(jobId, { status: "processing", createdAt: Date.now() });
 
     (async () => {
       try {
-        let reading, usedModel, usedTier;
+        let reading, usedModel;
         if (isLite) {
-          const resLite = await callGeminiFast({
-            apiKey,
-            systemInstruction: `당신은 다정한 사주 상담가 '별빛운세정원'입니다. 오늘(${koreaTodayText})의 운세와 핵심 사주 요약만 작성하세요.`,
-            prompt: `${baseDataText}\n\n오늘의 운세와 간단 풀이 JSON을 작성해주세요.`,
-            schema: LITE_SAJU_SCHEMA,
-            maxTokens: 2048,
+          const r = await callGeminiFast({
+            apiKey, systemInstruction: `당신은 '별빛운세정원'입니다. 오늘(${koreaTodayText})의 운세와 간단 사주 요약을 작성하세요.`,
+            prompt: `${formatPerson("본인", body, builtA)}\n\n오늘의 운세 JSON 작성.`, schema: LITE_SAJU_SCHEMA, maxTokens: 2048,
           });
-          reading = JSON.parse(String(resLite.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
-          usedModel = resLite.model; usedTier = resLite.usedTier;
+          reading = JSON.parse(String(r.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
+          usedModel = r.model;
         } else {
-          const sysFull = `당신은 한국 정통 자평명리학 대가 '별빛운세정원'입니다. 각 항목의 최소 글자수(총합 1만자 이상)를 반드시 채우고, 원국 근거를 직접 인용하며 [소제목]과 줄바꿈(\\n\\n)으로 작성하세요. 내년은 2027년 정미년입니다.`;
-          const p1Res = await callGeminiFast({
-            apiKey,
-            systemInstruction: sysFull,
-            prompt: `${fullDataText}\n\n[총평, 원국/용신/지장간/합충 심층 분석, 종합운, 재물/투자운, 개운 처방] JSON(5,500자 이상)을 아주 상세히 작성해주세요.`,
-            schema: FULL_PART1_SCHEMA,
-            maxTokens: 12288,
+          const sys = `당신은 한국 최고 명리학 대가 '별빛운세정원'입니다. ${PRODUCT_GUIDES[productType]}
+반드시 전체 텍스트 합이 공백 포함 **한국어 10,000자 이상**이 되도록 각 항목 최소 분량을 꽉 채워 쓰고, [소제목]과 줄바꿈(\\n\\n)으로 작성하세요.`;
+
+          const p1 = await callGeminiFast({
+            apiKey, systemInstruction: sys,
+            prompt: `${fullDataText}\n\n[전반부: 핵심 총평 + 본론 정밀 분석 + 재물/투자운 + 개운 처방] JSON(최소 5,500자 이상)을 작성해주세요.`,
+            schema: PROD_PART1_SCHEMA, maxTokens: 12288,
           });
-          await new Promise((r) => setTimeout(r, 800));
-          const p2Res = await callGeminiFast({
-            apiKey,
-            systemInstruction: sysFull,
-            prompt: `${fullDataText}\n\n[커리어/이직운, 연애/인연, 2027년 정미년 대운·세운, 맞춤 질문 해답, 2027년 1~12월 월별 운세 배열 12개] JSON(5,500자 이상)을 아주 상세히 작성해주세요.`,
-            schema: FULL_PART2_SCHEMA,
-            maxTokens: 12288,
+          await new Promise((r) => setTimeout(r, 700));
+          const p2 = await callGeminiFast({
+            apiKey, systemInstruction: sys,
+            prompt: `${fullDataText}\n\n[후반부: 연애/인연운 + 커리어/이직운 + 최종 해답/로드맵 + 2027년 12개월 월별 카드] JSON(최소 5,500자 이상)을 작성해주세요.`,
+            schema: PROD_PART2_SCHEMA, maxTokens: 12288,
           });
-          const part1 = JSON.parse(String(p1Res.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
-          const part2 = JSON.parse(String(p2Res.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
+          const part1 = JSON.parse(String(p1.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
+          const part2 = JSON.parse(String(p2.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
           reading = { ...part1, ...part2 };
-          usedModel = p1Res.model; usedTier = "parallel-fast";
+          usedModel = p1.model;
         }
 
         const totalChars = isLite
           ? (reading.todayFortune?.length || 0) + (reading.briefSajuSummary?.length || 0)
-          : [reading.executiveSummary, reading.chartDeepAnalysis, reading.comprehensiveFortune, reading.wealthAndInvestment, reading.careerAndJobChange, reading.loveAndRelationships, reading.newYear2027AndDaewoon, reading.questionAnswer].filter(Boolean).join("").length;
+          : [reading.executiveSummary, reading.overviewDeep, reading.wealthDeep, reading.loveDeep, reading.careerDeep, reading.answerDeep].filter(Boolean).join("").length;
 
         const birthText = `${body.year}.${String(body.month).padStart(2, "0")}.${String(body.day).padStart(2, "0")} ${body.unknownTime ? "시간 미상" : `${String(body.hour).padStart(2, "0")}:${String(body.minute).padStart(2, "0")}`}`;
         const resultPayload = {
           mode: isLite ? "lite" : "full",
-          meta: { name, gender, solarOrLunar: body.isLunar ? (body.isLeapMonth ? "음력(윤달)" : "음력") : "양력", birthText, todayText: koreaTodayText, approxKoreanAge, model: usedModel, usedTier, totalChars },
-          chart,
-          reading,
+          productType,
+          meta: {
+            name: body.name || "귀하", partnerName: body.partner?.name || "", relationType: body.relationType || "",
+            gender: body.gender || "female", solarOrLunar: body.isLunar ? (body.isLeapMonth ? "음력(윤달)" : "음력") : "양력",
+            birthText, todayText: koreaTodayText, approxKoreanAge, model: usedModel, totalChars,
+          },
+          chart, partnerChart: builtB?.chart || null, reading,
         };
 
         if (authUser && supabase) {
-          await supabase.from("saju_history").insert({ user_id: authUser.id, mode: resultPayload.mode, subject_name: name, birth_summary: `${resultPayload.meta.solarOrLunar} ${birthText}`, result_json: resultPayload });
+          const titleMap = { lite: "오늘의 운세", saju: "정통 종합사주", daewoon: "10년 대운", compat: `궁합(${body.partner?.name || "상대"})`, newyear: "2027 신년운세" };
+          await supabase.from("saju_history").insert({
+            user_id: authUser.id, mode: productType, subject_name: `${body.name || "귀하"} · ${titleMap[productType]}`,
+            birth_summary: `${resultPayload.meta.solarOrLunar} ${birthText}`, result_json: resultPayload,
+          });
           if (!isLite && REQUIRE_CREDITS) await supabase.from("users").update({ credits: authUser.credits - 1 }).eq("id", authUser.id);
         }
         sajuJobs.set(jobId, { status: "done", result: resultPayload, createdAt: Date.now() });
       } catch (bgErr) {
-        sajuJobs.set(jobId, { status: "error", error: `AI 사주 분석 오류: ${bgErr?.message || "다시 시도해주세요."}`, createdAt: Date.now() });
+        sajuJobs.set(jobId, { status: "error", error: `AI 분석 오류: ${bgErr?.message}`, createdAt: Date.now() });
       }
     })();
 
@@ -467,84 +416,22 @@ app.post("/api/saju", async (req, res) => {
   }
 });
 
-app.post("/api/compatibility", async (req, res) => {
-  try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey || apiKey.includes("your_gemini")) return res.status(500).json({ error: "GEMINI_API_KEY를 설정해주세요." });
-    const authUser = await getAuthUser(req);
-    if (!authUser) return res.status(401).json({ error: "2인 정밀 궁합은 카카오 로그인 후 이용하실 수 있습니다." });
-    if (REQUIRE_CREDITS && authUser.credits <= 0) return res.status(402).json({ error: "이용권이 부족합니다." });
-
-    const { personA, personB, relationType = "연인·결혼" } = req.body;
-    if (!personA?.year || !personB?.year) return res.status(400).json({ error: "두 분의 생년월일을 모두 입력해주세요." });
-
-    let builtA, builtB;
-    try { builtA = buildChartObject(personA); builtB = buildChartObject(personB); } catch (e) { return res.status(400).json({ error: `날짜 오류: 음력/윤달 여부를 확인해주세요. (${e.message})` }); }
-
-    const jobId = crypto.randomUUID();
-    sajuJobs.set(jobId, { status: "processing", createdAt: Date.now() });
-
-    (async () => {
-      try {
-        const prompt = `
-[관계 유형] ${relationType}
-[첫 번째 사람: ${personA.name || "본인"} (${personA.gender === "male" ? "남" : "여"})]
-- 원국: ${builtA.chart.pillars.year.korean}년 ${builtA.chart.pillars.month.korean}월 ${builtA.chart.pillars.day.korean}일 ${builtA.chart.pillars.hour ? builtA.chart.pillars.hour.korean + "시" : "(시간미상)"}
-- 일간: ${builtA.chart.pillars.day.stem.title} / 오행: 목${builtA.chart.elements.counts["목"]} 화${builtA.chart.elements.counts["화"]} 토${builtA.chart.elements.counts["토"]} 금${builtA.chart.elements.counts["금"]} 수${builtA.chart.elements.counts["수"]}
-
-[두 번째 사람: ${personB.name || "상대방"} (${personB.gender === "male" ? "남" : "여"})]
-- 원국: ${builtB.chart.pillars.year.korean}년 ${builtB.chart.pillars.month.korean}월 ${builtB.chart.pillars.day.korean}일 ${builtB.chart.pillars.hour ? builtB.chart.pillars.hour.korean + "시" : "(시간미상)"}
-- 일간: ${builtB.chart.pillars.day.stem.title} / 오행: 목${builtB.chart.elements.counts["목"]} 화${builtB.chart.elements.counts["화"]} 토${builtB.chart.elements.counts["토"]} 금${builtB.chart.elements.counts["금"]} 수${builtB.chart.elements.counts["수"]}
-
-두 사람의 일간 합충, 일지(배우자궁) 조화, 오행 상호보완을 근거로 깊이 있고 현실적인 궁합 리포트 JSON(총 4,500자 이상)을 작성해주세요.`.trim();
-
-        const aiRes = await callGeminiFast({
-          apiKey,
-          systemInstruction: "당신은 한국 정통 궁합 명리학 대가 '별빛운세정원'입니다. 두 사람의 사주를 입체적으로 비교하여 현실적이고 따뜻한 궁합 풀이를 작성하세요.",
-          prompt,
-          schema: COMPAT_SCHEMA,
-          maxTokens: 10240,
-        });
-        const reading = JSON.parse(String(aiRes.text || "{}").replace(/^```json\s*/i, "").replace(/```$/g, "").trim());
-        const resultPayload = { mode: "compat", meta: { nameA: personA.name || "본인", nameB: personB.name || "상대방", relationType, model: aiRes.model }, chartA: builtA.chart, chartB: builtB.chart, reading };
-
-        if (supabase) {
-          await supabase.from("saju_history").insert({ user_id: authUser.id, mode: "compat", subject_name: `${resultPayload.meta.nameA} ♥ ${resultPayload.meta.nameB}`, birth_summary: `${relationType} 궁합 (${reading.score}점)`, result_json: resultPayload });
-          if (REQUIRE_CREDITS) await supabase.from("users").update({ credits: authUser.credits - 1 }).eq("id", authUser.id);
-        }
-        sajuJobs.set(jobId, { status: "done", result: resultPayload, createdAt: Date.now() });
-      } catch (bgErr) {
-        sajuJobs.set(jobId, { status: "error", error: `궁합 분석 오류: ${bgErr?.message}`, createdAt: Date.now() });
-      }
-    })();
-
-    res.json({ jobId });
-  } catch (err) {
-    res.status(500).json({ error: `궁합 오류: ${err?.message}` });
-  }
-});
-
 app.post("/api/saju/followup", async (req, res) => {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
     const { contextSummary, question } = req.body;
-    if (!question || !String(question).trim()) return res.status(400).json({ error: "질문을 입력해주세요." });
+    if (!question?.trim()) return res.status(400).json({ error: "질문을 입력해주세요." });
     const aiRes = await callGeminiFast({
-      apiKey,
-      systemInstruction: "당신은 사주 상담가 '별빛운세정원'입니다. 아래 의뢰인의 사주 원국 정보를 바탕으로 추가 질문에 4~6문장 정도로 명쾌하고 따뜻하게 답해주세요. 일반 한국어 텍스트로 답하세요.",
-      prompt: `[의뢰인 사주 요약]\n${contextSummary}\n\n[추가 질문]\n${question}`,
-      schema: null,
-      maxTokens: 1024,
+      apiKey: process.env.GEMINI_API_KEY,
+      systemInstruction: "당신은 사주 상담가 '별빛운세정원'입니다. 아래 사주 정보를 바탕으로 추가 질문에 4~6문장으로 명쾌하게 답해주세요.",
+      prompt: `[사주 요약]\n${contextSummary}\n\n[질문]\n${question}`, schema: null, maxTokens: 1024,
     });
     res.json({ answer: aiRes.text });
-  } catch (err) {
-    res.status(500).json({ error: "답변 생성 중 잠시 혼잡이 발생했습니다. 다시 눌러주세요." });
-  }
+  } catch { res.status(500).json({ error: "잠시 후 다시 눌러주세요." }); }
 });
 
 app.get("/api/saju/status/:jobId", (req, res) => {
   const job = sajuJobs.get(req.params.jobId);
-  if (!job) return res.status(404).json({ status: "error", error: "작업 시간이 초과되었습니다. 다시 시도해주세요." });
+  if (!job) return res.status(404).json({ status: "error", error: "작업 시간이 초과되었습니다." });
   if (job.status === "done") { sajuJobs.delete(req.params.jobId); return res.json({ status: "done", data: job.result }); }
   if (job.status === "error") { sajuJobs.delete(req.params.jobId); return res.json({ status: "error", error: job.error }); }
   res.json({ status: "processing" });
