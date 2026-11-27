@@ -436,7 +436,37 @@ app.get("/api/saju/status/:jobId", (req, res) => {
   if (job.status === "error") { sajuJobs.delete(req.params.jobId); return res.json({ status: "error", error: job.error }); }
   res.json({ status: "processing" });
 });
+function checkAdmin(req, res) {
+  const pin = req.headers["x-admin-pin"] || req.query.pin || req.body?.adminPin;
+  const validPin = process.env.ADMIN_PIN || "9900";
+  if (String(pin) !== String(validPin)) {
+    res.status(403).json({ error: "관리자 PIN이 올바르지 않습니다." });
+    return false;
+  }
+  return true;
+}
 
+app.get("/api/admin/dashboard", async (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  if (!supabase) return res.status(500).json({ error: "DB 미연결" });
+  const [{ data: users }, { data: history }, { data: stats }] = await Promise.all([
+    supabase.from("users").select("id, kakao_id, nickname, credits, created_at").order("created_at", { ascending: false }).limit(100),
+    supabase.from("saju_history").select("id, user_id, mode, subject_name, birth_summary, created_at").order("created_at", { ascending: false }).limit(50),
+    supabase.from("site_stats").select("count").eq("id", "visits").maybeSingle(),
+  ]);
+  res.json({ visits: stats?.count || fallbackVisits, users: users || [], history: history || [] });
+});
+
+app.post("/api/admin/users/:id/credits", async (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const userId = Number(req.params.id);
+  const delta = Number(req.body.delta || 0);
+  const { data: u } = await supabase.from("users").select("credits").eq("id", userId).single();
+  if (!u) return res.status(404).json({ error: "회원을 찾을 수 없습니다." });
+  const nextCredits = Math.max(0, Number(u.credits || 0) + delta);
+  await supabase.from("users").update({ credits: nextCredits }).eq("id", userId);
+  res.json({ credits: nextCredits });
+});
 app.listen(PORT, "0.0.0.0", () => console.log(`✨ 별빛운세정원 서버 실행: http://0.0.0.0:${PORT}`));
 app.post("/api/charge/test", async (req, res) => {
   const user = await getAuthUser(req);
