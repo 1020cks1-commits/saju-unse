@@ -21,7 +21,7 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 const PORT = process.env.PORT || 3000;
 const MODEL_CANDIDATES = ["gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-4-hydrogen"];
 const JWT_SECRET = process.env.JWT_SECRET || "byeolbit_fallback_secret_2026";
-const REQUIRE_CREDITS = process.env.REQUIRE_CREDITS === "true";
+const REQUIRE_CREDITS = process.env.REQUIRE_CREDITS !== "false";
 
 const sajuJobs = new Map();
 setInterval(() => {
@@ -101,7 +101,7 @@ app.get("/auth/kakao/callback", async (req, res) => {
     if (selectErr) return sendLoginErrorPage(res, "DB 조회 실패", JSON.stringify(selectErr));
 
     if (!existingUser) {
-      const { data: created, error: insertErr } = await supabase.from("users").insert({ kakao_id: kakaoId, nickname, credits: 3 }).select("id, kakao_id, nickname, credits").single();
+      const { data: created, error: insertErr } = await supabase.from("users").insert({ kakao_id: kakaoId, nickname, credits: 1 }).select("id, kakao_id, nickname, credits").single();
       if (insertErr) return sendLoginErrorPage(res, "DB 저장 실패", JSON.stringify(insertErr));
       existingUser = created;
     } else if (existingUser.nickname !== nickname) {
@@ -438,3 +438,16 @@ app.get("/api/saju/status/:jobId", (req, res) => {
 });
 
 app.listen(PORT, "0.0.0.0", () => console.log(`✨ 별빛운세정원 서버 실행: http://0.0.0.0:${PORT}`));
+app.post("/api/charge/test", async (req, res) => {
+  const user = await getAuthUser(req);
+  if (!user) return res.status(401).json({ error: "카카오 로그인 후 이용해 주세요." });
+  const { amount, adminPin } = req.body;
+  const validPin = process.env.ADMIN_PIN || "9900";
+  if (String(adminPin) !== String(validPin)) {
+    return res.status(403).json({ error: "현재 정식 카드결제(PG) 연동 준비 중입니다. (관리자 PIN이 일치하지 않습니다.)" });
+  }
+  const add = [1, 5, 10].includes(Number(amount)) ? Number(amount) : 1;
+  const nextCredits = Number(user.credits || 0) + add;
+  await supabase.from("users").update({ credits: nextCredits }).eq("id", user.id);
+  res.json({ credits: nextCredits });
+});
