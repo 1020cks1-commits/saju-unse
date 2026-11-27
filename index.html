@@ -684,18 +684,20 @@
         el("authArea").innerHTML = `<a href="/auth/kakao" class="kakao-login-btn">💬 카카오로 3초 시작</a>`;
         return;
       }
-      el("authArea").innerHTML = `
-        <span class="user-chip">👤 ${escapeHtml(state.user.nickname)}님 · <span class="credit-tag">이용권 ${state.user.credits}회</span></span>
-        <button type="button" id="openHistoryBtn" class="mini-nav-btn">📜 보관함</button>
-        <button type="button" id="logoutBtn" class="mini-nav-btn">로그아웃</button>`;
-      el("openHistoryBtn").addEventListener("click", openHistory);
+    el("authArea").innerHTML = `
+      <span class="user-chip">👤 ${escapeHtml(state.user.nickname)}님 · <span class="credit-tag">이용권 ${state.user.credits}회</span></span>
+      <button type="button" id="topChargeBtn" class="charge-top-btn">💎 충전</button>
+      <button type="button" id="openHistoryBtn" class="mini-nav-btn">📜 보관함</button>
+      <button type="button" id="logoutBtn" class="mini-nav-btn">로그아웃</button>`;
+    el("topChargeBtn").addEventListener("click", openCharge);
+    el("openHistoryBtn").addEventListener("click", openHistory);
       el("logoutBtn").addEventListener("click", async () => {
         await fetch("/auth/logout", { method: "POST" }); state.user = null; renderAuthArea(); goHome();
       });
     }
 
     function hideAllSections() {
-      ["inputSection", "historySection", "loadingSection", "liteResultSection", "resultSection"]
+     ["inputSection", "chargeSection", "historySection", "loadingSection", "liteResultSection", "resultSection"]
         .forEach((id) => el(id).classList.add("hidden"));
     }
 
@@ -786,10 +788,18 @@
         if (confirm("🔮 1만자 정밀 풀이는 카카오 로그인 후 이용하실 수 있습니다.\n카카오로 3초 로그인 하시겠습니까?")) window.location.href = "/auth/kakao";
         return;
       }
-      if (!isLite && state.unlocked[productType]) {
-        state.lastResult = state.unlocked[productType];
-        hideAllSections(); renderFullResult(state.lastResult); el("resultSection").classList.remove("hidden"); return;
+   if (!isLite && state.unlocked[productType]) {
+      state.lastResult = state.unlocked[productType];
+      hideAllSections(); renderFullResult(state.lastResult); el("resultSection").classList.remove("hidden"); return;
+    }
+    if (!isLite) {
+      if ((state.user?.credits || 0) <= 0) {
+        if (confirm("😢 보유한 이용권이 없습니다.\n충전 창으로 이동하시겠습니까?")) openCharge();
+        return;
       }
+      const pNames = { saju: "정통 종합사주", daewoon: "10년 대운 풀이", compat: "2인 정밀 궁합", newyear: "2027 신년운세" };
+      if (!confirm(`🔮 [${pNames[productType] || "정밀 풀이"}] 조회 시 1이용권이 소모됩니다.\n(현재 보유: ${state.user.credits}회) 진행하시겠습니까?`)) return;
+    }
       hideAllSections(); el("loadingSection").classList.remove("hidden");
       const vid = el("loadingVideo"); if (vid) { vid.currentTime = 0; vid.play().catch(() => {}); }
       startLoading(productType);
@@ -989,5 +999,28 @@
       el("copyBtn").textContent = "✅ 복사 완료!"; setTimeout(() => { el("copyBtn").textContent = "📋 전체 복사"; }, 2500);
     });
   </script>
+  function openCharge() {
+      if (!state.user) {
+        if (confirm("💎 이용권 충전은 카카오 로그인 후 가능합니다.\n로그인 하시겠습니까?")) window.location.href = "/auth/kakao";
+        return;
+      }
+      hideAllSections();
+      el("chargeCurCredits").textContent = `현재 보유: ${state.user.credits}회`;
+      el("chargeSection").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    el("mainChargeBtn").addEventListener("click", openCharge);
+    el("chargeBackBtn").addEventListener("click", goHome);
+    document.querySelectorAll(".charge-card").forEach((c) => c.addEventListener("click", async () => {
+      const amt = Number(c.dataset.amount), price = Number(c.dataset.price).toLocaleString("ko-KR");
+      const pin = prompt(`💎 ${amt}이용권 (${price}원)\n\n현재 정식 카드결제(PG) 오픈 준비 중입니다.\n관리자 테스트 충전을 원하시면 테스트 PIN을 입력하세요.`);
+      if (!pin) return;
+      try {
+        const res = await safeJson(await fetch("/api/charge/test", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: amt, adminPin: pin }) }));
+        if (!res.credits && res.credits !== 0) throw new Error(res.error);
+        alert(`✅ ${amt}이용권 충전 완료! (보유: ${res.credits}회)`);
+        await loadMe(); openCharge();
+      } catch (e) { alert(e.message); }
+    }));
 </body>
 </html>
