@@ -251,6 +251,12 @@
     .charge-price { font-size: 1.45rem; font-weight: 800; color: #fde68a; }
     .charge-orig { font-size: 0.8rem; color: var(--text-muted); text-decoration: line-through; }
     @media (max-width: 680px) { .charge-grid { grid-template-columns: 1fr; } }
+  .admin-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+    .kpi-box { padding: 14px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); text-align: center; }
+    .kpi-num { font-size: 1.35rem; font-weight: 800; color: #fde68a; margin-top: 4px; }
+    .adm-btn { padding: 5px 9px; border-radius: 8px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: #fff; font-size: 0.76rem; cursor: pointer; }
+    .adm-btn:hover { background: rgba(251,191,36,.3); }
+    @media (max-width: 600px) { .admin-kpi-grid { grid-template-columns: 1fr 1fr; } }
   </style>
  
 </head>
@@ -500,6 +506,20 @@
         </article>
       </section>
       <section id="historySection" class="lite-wrapper hidden">
+        <section id="adminSection" class="lite-wrapper hidden">
+     <div class="result-toolbar">
+       <button type="button" id="adminBackBtn" class="ghost-glass-btn">← 돌아가기</button>
+       <span class="tier-badge">⚙️ 사장님 전용 관리자 모드</span>
+     </div>
+     <article class="glass-card lite-card">
+       <div class="card-title-row"><h3>📊 실시간 운영 현황</h3><button type="button" id="adminRefreshBtn" class="adm-btn">🔄 새로고침</button></div>
+       <div id="adminKpis" class="admin-kpi-grid"></div>
+       <h4 style="margin:14px 0 10px;color:#fde68a;">👥 가입 회원 & 이용권 지급/관리</h4>
+       <div id="adminUsersList" style="display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;"></div>
+       <h4 style="margin:22px 0 10px;color:#c7d2fe;">📜 최근 사주·궁합 이용 내역 (50건)</h4>
+       <div id="adminHistoryList" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;"></div>
+     </article>
+   </section>
         <div class="result-toolbar">
           <button type="button" id="historyBackBtn" class="ghost-glass-btn">← 돌아가기</button>
           <span class="tier-badge">📜 내 사주·궁합 보관함</span>
@@ -606,6 +626,7 @@
 
     <footer class="app-footer">
       <p>별빛운세정원 AI 사주는 생성형 AI(Gemini)와 한국천문연구원(KASI) 기반 만세력을 결합한 자기성찰·엔터테인먼트 서비스입니다.</p>
+    <p style="margin-top:8px;"><button type="button" id="openAdminBtn" class="adm-btn" style="opacity:0.6;">⚙️ 관리자 모드</button></p>
     </footer>
   </div>
   <script>
@@ -697,7 +718,7 @@
     }
 
     function hideAllSections() {
-     ["inputSection", "chargeSection", "historySection", "loadingSection", "liteResultSection", "resultSection"]
+     ["inputSection", "chargeSection", "adminSection", "historySection", "loadingSection", "liteResultSection", "resultSection"]
         .forEach((id) => el(id).classList.add("hidden"));
     }
 
@@ -1022,6 +1043,50 @@
         await loadMe(); openCharge();
       } catch (e) { alert(e.message); }
     }));
-       </script>
+      let savedAdminPin = "";
+    async function loadAdminDashboard() {
+      const res = await safeJson(await fetch("/api/admin/dashboard", { headers: { "x-admin-pin": savedAdminPin } }));
+      if (res.error) throw new Error(res.error);
+      const totalCredits = res.users.reduce((s, u) => s + Number(u.credits || 0), 0);
+      el("adminKpis").innerHTML = [
+        ["누적 방문자", `${Number(res.visits).toLocaleString()}명`],
+        ["총 가입 회원", `${res.users.length}명`],
+        ["누적 사주 건수", `${res.history.length}건`],
+        ["회원 보유 이용권", `${totalCredits}회`],
+      ].map(([k, v]) => `<div class="kpi-box"><div style="font-size:0.75rem;color:var(--text-muted);">${k}</div><div class="kpi-num">${v}</div></div>`).join("");
+
+      el("adminUsersList").innerHTML = res.users.map((u) => `
+        <div class="history-item" style="padding:10px 14px;">
+          <div><strong>${escapeHtml(u.nickname)}</strong> <span style="font-size:0.75rem;color:var(--text-muted);">(#${u.id} · ${new Date(u.created_at).toLocaleDateString("ko-KR")})</span></div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span style="color:#fde68a;font-weight:700;margin-right:4px;">${u.credits}회</span>
+            <button type="button" class="adm-btn adm-give" data-id="${u.id}" data-d="1">+1</button>
+            <button type="button" class="adm-btn adm-give" data-id="${u.id}" data-d="5">+5</button>
+            <button type="button" class="adm-btn adm-give" data-id="${u.id}" data-d="10">+10</button>
+            <button type="button" class="adm-btn adm-give" data-id="${u.id}" data-d="-1" style="color:#fda4af;">-1</button>
+          </div>
+        </div>`).join("");
+
+      el("adminUsersList").querySelectorAll(".adm-give").forEach((b) => b.addEventListener("click", async () => {
+        await fetch(`/api/admin/users/${b.dataset.id}/credits`, { method: "POST", headers: { "Content-Type": "application/json", "x-admin-pin": savedAdminPin }, body: JSON.stringify({ delta: Number(b.dataset.d) }) });
+        loadAdminDashboard(); loadMe();
+      }));
+
+      el("adminHistoryList").innerHTML = res.history.map((h) => `
+        <div class="history-item" style="padding:10px 14px;font-size:0.84rem;">
+          <span><strong>${escapeHtml(h.subject_name)}</strong> (${escapeHtml(h.birth_summary)})</span>
+          <span style="color:var(--text-muted);">${new Date(h.created_at).toLocaleString("ko-KR")}</span>
+        </div>`).join("");
+    }
+    el("openAdminBtn").addEventListener("click", async () => {
+      const pin = prompt("⚙️ 관리자 PIN 번호를 입력하세요:");
+      if (!pin) return;
+      savedAdminPin = pin;
+      try { await loadAdminDashboard(); hideAllSections(); el("adminSection").classList.remove("hidden"); window.scrollTo({ top: 0, behavior: "smooth" }); }
+      catch (e) { savedAdminPin = ""; alert(e.message); }
+    });
+    el("adminRefreshBtn").addEventListener("click", () => loadAdminDashboard());
+    el("adminBackBtn").addEventListener("click", goHome);
+  </script>
 </body>
 </html>
