@@ -237,10 +237,7 @@
       <button type="button" id="introSkipBtn" class="intro-btn">건너뛰기 →</button>
     </div>
     <div class="intro-frame">
-      <div id="introStartCover" class="intro-start-cover">
-        <button type="button" id="introEnterSoundBtn" class="intro-enter-btn">🔊 소리 켜고 별빛운세정원 입장 ✨</button>
-        <button type="button" id="introEnterMuteBtn" class="intro-btn">조용히 감상하기</button>
-      </div>
+     
       <video id="introVideo" src="/images/intro.mp4" playsinline preload="auto"></video>
     </div>
     <div class="intro-caption">
@@ -616,34 +613,25 @@
     })();
 
     // 2. 인트로 영상 (입장 클릭 시 소리 100% ON)
-    (function initIntro() {
-      const overlay = el("introOverlay"), video = el("introVideo"), cover = el("introStartCover");
-      const skipBtn = el("introSkipBtn"), soundBtn = el("introSoundBtn");
-      if (!overlay || !video || sessionStorage.getItem("byeolbit_intro_seen")) return;
-      overlay.classList.remove("hidden");
-      function closeIntro() {
-        sessionStorage.setItem("byeolbit_intro_seen", "1");
-        overlay.classList.add("fade-out");
-        setTimeout(() => { overlay.classList.add("hidden"); video.pause(); }, 900);
-      }
-      el("introEnterSoundBtn").addEventListener("click", () => {
-        cover.classList.add("hidden");
-        video.muted = false; video.currentTime = 0; video.play().catch(() => {});
-        soundBtn.textContent = "🔊 소리 끄기";
-      });
-      el("introEnterMuteBtn").addEventListener("click", () => {
-        cover.classList.add("hidden");
-        video.muted = true; video.currentTime = 0; video.play().catch(() => {});
-        soundBtn.textContent = "🔇 소리 켜기";
-      });
-      video.addEventListener("ended", closeIntro);
-      video.addEventListener("error", closeIntro);
-      skipBtn.addEventListener("click", closeIntro);
-      soundBtn.addEventListener("click", () => {
-        video.muted = !video.muted;
-        soundBtn.textContent = video.muted ? "🔇 소리 켜기" : "🔊 소리 끄기";
-      });
-    })();
+   (function initIntro() {
+    const overlay = el("introOverlay"), video = el("introVideo");
+    const skipBtn = el("introSkipBtn"), soundBtn = el("introSoundBtn");
+    if (!overlay || !video || sessionStorage.getItem("byeolbit_intro_seen")) return;
+    overlay.classList.remove("hidden");
+    function closeIntro() {
+      sessionStorage.setItem("byeolbit_intro_seen", "1");
+      overlay.classList.add("fade-out");
+      setTimeout(() => { overlay.classList.add("hidden"); video.pause(); }, 900);
+    }
+    video.addEventListener("ended", closeIntro);
+    video.addEventListener("error", closeIntro);
+    skipBtn.addEventListener("click", closeIntro);
+    soundBtn.addEventListener("click", () => {
+      video.muted = !video.muted;
+      soundBtn.textContent = video.muted ? "🔇 소리 켜기" : "🔊 소리 끄기";
+    });
+    video.play().catch(() => {});
+  })();
 
     // 3. 방문자 & 로그인
     fetch("/api/visit", { method: "POST" }).then((r) => r.json())
