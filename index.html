@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>별빛운세정원 | 990원 정통 사주 · 대운 · 궁합 · 신년운세</title>
   <meta property="og:type" content="website" />
@@ -238,6 +239,19 @@
       .reading-content, .lite-text, .hero-summary { font-size: 0.94rem; }
     }
   </style>
+  .charge-top-btn { padding: 7px 13px; border-radius: 999px; border: 1px solid rgba(251,191,36,.6); background: rgba(251,191,36,.2); color: #fde68a; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+    .charge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 12px; }
+    .charge-card {
+      position: relative; padding: 24px 16px; border-radius: 22px; text-align: center; cursor: pointer;
+      border: 1px solid rgba(255,255,255,.18); background: rgba(15,23,42,.55); color: #fff;
+      display: flex; flex-direction: column; gap: 10px; transition: transform 0.2s, border-color 0.2s;
+    }
+    .charge-card:hover { transform: translateY(-3px); border-color: rgba(251,191,36,.7); }
+    .charge-card.popular { border-color: rgba(251,191,36,.65); background: linear-gradient(145deg, rgba(251,191,36,.16), rgba(15,23,42,.6)); }
+    .charge-badge { display: inline-block; margin: 0 auto; font-size: 0.74rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: rgba(251,191,36,.25); color: #fde68a; }
+    .charge-price { font-size: 1.45rem; font-weight: 800; color: #fde68a; }
+    .charge-orig { font-size: 0.8rem; color: var(--text-muted); text-decoration: line-through; }
+    @media (max-width: 680px) { .charge-grid { grid-template-columns: 1fr; } }
 </head>
 <body data-element="수">
   <canvas id="petalCanvas"></canvas>
@@ -420,7 +434,10 @@
 
           <button type="button" id="liteBtn" class="cta-lite-btn">✨ 무료 맛보기: 오늘의 운세 & 내 사주 원국 보기 (0원) →</button>
 
-          <p class="product-section-title">🔮 프리미엄 1만자+ 정밀 풀이 선택 (각 990원 · 1이용권)</p>
+         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:6px;">
+          <p class="product-section-title" style="margin:0;">🔮 프리미엄 1만자+ 정밀 풀이 (각 990원 · 1이용권)</p>
+          <button type="button" id="mainChargeBtn" class="charge-top-btn">💎 이용권 충전하기</button>
+        </div>
           <div class="product-grid">
             <button type="button" class="prod-card" data-prod="saju">
               <div class="prod-top"><span class="prod-name">📜 정통 종합사주</span><span class="price-pill">990원</span></div>
@@ -444,6 +461,42 @@
             </button>
           </div>
         </form>
+      </section>
+      <section id="chargeSection" class="lite-wrapper hidden">
+        <div class="result-toolbar">
+          <button type="button" id="chargeBackBtn" class="ghost-glass-btn">← 돌아가기</button>
+          <span class="tier-badge">💎 이용권 충전</span>
+        </div>
+        <article class="glass-card lite-card">
+          <div class="card-title-row">
+            <h3>별빛운세정원 이용권 구매</h3>
+            <span id="chargeCurCredits" class="mini-info-badge">현재 보유: 0회</span>
+          </div>
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:16px;">정통종합사주 · 10년 대운 · 2인 궁합 · 2027 신년운세(각 1만자+) 모두 이용권 1회로 이용 가능합니다.</p>
+          <div class="charge-grid">
+            <button type="button" class="charge-card" data-amount="1" data-price="990">
+              <span class="charge-badge">기본 체험</span>
+              <strong style="font-size:1.15rem;">1이용권</strong>
+              <div><span class="charge-price">990원</span></div>
+              <span style="font-size:0.78rem;color:var(--text-muted);">1건당 990원</span>
+            </button>
+            <button type="button" class="charge-card popular" data-amount="5" data-price="4690">
+              <span class="charge-badge">🔥 인기 · 5% 할인</span>
+              <strong style="font-size:1.15rem;">5이용권</strong>
+              <div><span class="charge-orig">4,950원</span> <span class="charge-price">4,690원</span></div>
+              <span style="font-size:0.78rem;color:#fde68a;">1건당 938원 (4대 상품 + 1회 여유!)</span>
+            </button>
+            <button type="button" class="charge-card" data-amount="10" data-price="8900">
+              <span class="charge-badge" style="background:rgba(244,63,94,.25);color:#fecdd3;">💑 커플·가족 · 10% 할인</span>
+              <strong style="font-size:1.15rem;">10이용권</strong>
+              <div><span class="charge-orig">9,900원</span> <span class="charge-price">8,900원</span></div>
+              <span style="font-size:0.78rem;color:#fecdd3;">1건당 890원 (가장 큰 혜택!)</span>
+            </button>
+          </div>
+          <p style="margin-top:18px;font-size:0.8rem;color:var(--text-muted);text-align:center;">
+            ※ 카드·카카오페이·토스페이 정식 결제(PG) 오픈 준비 중입니다. (관리자 테스트 PIN 입력 시 즉시 충전 테스트 가능)
+          </p>
+        </article>
       </section>
       <section id="historySection" class="lite-wrapper hidden">
         <div class="result-toolbar">
