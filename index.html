@@ -503,6 +503,17 @@
           <p style="margin-top:18px;font-size:0.8rem;color:var(--text-muted);text-align:center;">
             ※ 카드·카카오페이·토스페이 정식 결제(PG) 오픈 준비 중입니다. (관리자 테스트 PIN 입력 시 즉시 충전 테스트 가능)
           </p>
+          <div style="margin-top:20px;padding:16px;border-radius:16px;background:rgba(15,23,42,.55);border:1px solid rgba(255,255,255,.12);font-size:0.8rem;line-height:1.65;color:var(--text-secondary);">
+            <strong style="display:block;color:#fde68a;margin-bottom:6px;">📌 이용권 유효기간 및 환불·청약철회 규정</strong>
+            <p>• <strong>유효기간:</strong> 구매한 이용권은 결제일로부터 <strong>1년간</strong> 사용 가능합니다.</p>
+            <p>• <strong>전액 환불:</strong> 결제일로부터 <strong>7일 이내</strong>에 이용권을 전혀 사용하지 않은 경우 전액 환불됩니다.</p>
+            <p>• <strong>일부 사용 시 환불:</strong> 5·10이용권 묶음 구매 후 일부를 사용하신 경우, 사용한 횟수를 정가(1회 990원)로 공제한 잔액만 환불됩니다. (단, 1이용권 단건 구매 후 사주를 열람·생성한 경우 디지털 콘텐츠 특성상 전자상거래법 제17조 제2항에 따라 청약철회가 제한됩니다.)</p>
+            <p>• <strong>오류 보상:</strong> 시스템 장애로 풀이가 정상 생성되지 않고 이용권만 차감된 경우 100% 복구 또는 환불해 드립니다.</p>
+            <label style="display:flex;align-items:center;gap:8px;margin-top:12px;color:#fff;font-weight:600;cursor:pointer;">
+              <input type="checkbox" id="refundAgreeCheck" checked />
+              <span>위 이용권 유효기간 및 환불 규정을 확인하였으며 결제에 동의합니다.</span>
+            </label>
+          </div>
         </article>
       </section>
       <section id="historySection" class="lite-wrapper hidden">
@@ -628,6 +639,15 @@
     <footer class="app-footer">
       <p>별빛운세정원 AI 사주는 생성형 AI(Gemini)와 한국천문연구원(KASI) 기반 만세력을 결합한 자기성찰·엔터테인먼트 서비스입니다.</p>
     <p style="margin-top:8px;"><button type="button" id="openAdminBtn" class="adm-btn" style="opacity:0.6;">⚙️ 관리자 모드</button></p>
+    <div style="margin-top:14px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+        <button type="button" class="adm-btn" onclick="openPolicy('terms')">이용약관</button>
+        <button type="button" class="adm-btn" onclick="openPolicy('privacy')">개인정보처리방침</button>
+        <button type="button" class="adm-btn" onclick="openPolicy('refund')">환불규정</button>
+      </div>
+      <p style="margin-top:10px;line-height:1.7;opacity:0.8;">
+        상호명: 꽃길과비단길 | 대표자: 최우현 | 사업자등록번호: 000-00-00000 (12월 등록 예정)<br/>
+        통신판매업신고: 제2026-OOOO-0000호 | 고객센터: 1020cks1@gmail.com | 호스팅: Cloudtype
+      </p>
     </footer>
   </div>
   <script>
@@ -1088,6 +1108,14 @@
     });
     el("adminRefreshBtn").addEventListener("click", () => loadAdminDashboard());
     el("adminBackBtn").addEventListener("click", goHome);
+ function openPolicy(type) {
+      const msgs = {
+        terms: "[이용약관]\n1. 별빛운세정원은 KASI 만세력과 AI 추론 기반의 운세·사주 콘텐츠를 제공합니다.\n2. 본 풀이는 자기성찰 및 엔터테인먼트 참고용이며 의학·법률·투자 판단의 근거가 될 수 없습니다.\n3. 유료 이용권 유효기간은 구매일로부터 1년입니다.",
+        privacy: "[개인정보처리방침]\n1. 수집 항목: 카카오 로그인 식별자·닉네임(서비스 회원 식별), 사용자가 입력한 생년월일시(사주 풀이 및 보관함 저장용).\n2. 보유 기간: 회원 탈퇴 또는 보관함 삭제 요청 시 즉시 파기합니다.\n3. 문의: 1020cks1@gmail.com",
+        refund: "[환불 및 청약철회 규정]\n1. 미사용 이용권은 결제 후 7일 이내 전액 환불 가능합니다.\n2. 사주 생성·열람이 시작된 이용권은 디지털 콘텐츠 특성상 환불이 제한됩니다.\n3. 묶음 상품 일부 사용 시 정가(1회 990원) 공제 후 잔액을 환불합니다.\n4. 시스템 오류 미제공 시 100% 복구 또는 환불해 드립니다."
+      };
+      alert(msgs[type] || "");
+    }
   </script>
 </body>
 </html>
